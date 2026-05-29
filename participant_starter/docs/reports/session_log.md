@@ -33,3 +33,27 @@
 **Next session focus:** Details and product design
 
 ---
+
+## Session 2 — 2026-05-29
+
+**Goal for this session:** Build out custom Claude commands and craft an initial prompt for the check-in feature.
+
+**What we did:**
+- Created /start-session command — generates a project brief at the top of each session from session log, decisions, git history, and problem definition
+- Created /build-prompt command — interactive prompt-building conversation that outputs a copyable, optimized prompt
+- Used /build-prompt to draft the check-in prompt (saved to prompts/checkin_prompt.md)
+- Created /wrap-up command — guides end-of-session reflection and appends entries to session_log.md and decisions.md
+
+**What we tried that didn't work:**
+- Nothing notable this session.
+
+**What we learned:**
+- How to create custom commands and skills in Claude Code
+
+**Blockers or open questions:**
+- Experiment not yet run — four test scenarios ready in prompts/testing_prompt.md, to be tested before Session 3
+- Check-in prompt is a starting point and may evolve as the build progresses
+
+**Next session focus:** Testing prompts
+
+---
