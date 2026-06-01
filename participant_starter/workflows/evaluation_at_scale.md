@@ -10,11 +10,13 @@
 **For participants:** Reference this file with `@` in Claude Code and say "Let's work through the evaluation at scale workflow." Claude will guide you through each step.
 
 **For Claude:** When a participant starts this workflow:
-1. Begin with Step 1 and follow each step prompt in order
-2. Complete one step fully before moving to the next
-3. Where a step shows "Confirm before continuing" — ask that question and wait for a response before proceeding
-4. Save outputs to the file paths specified in each step
-5. When you reach the final step, let the participant know the workflow is complete and remind them to update `docs/reports/session_log.md`
+1. Check `docs/reports/workflow_progress.md` — if this workflow shows "in progress", tell the participant which step they completed last and resume from there
+2. Begin with Step 1 and follow each step prompt in order
+3. Complete one step fully before moving to the next
+4. Where a step shows "Confirm before continuing" — ask that question and wait for a response before proceeding
+5. Save outputs to the file paths specified in each step
+6. After each step confirm, update `docs/reports/workflow_progress.md` — set status to "in progress" and record the last step completed
+7. When you reach the final step, update `docs/reports/workflow_progress.md` to "complete", let the participant know the workflow is complete, and remind them to update `docs/reports/session_log.md` and `docs/reports/decisions.md`
 
 - Keep tone collaborative; explain why each decision matters for confident evaluation
 - Use Socratic questioning — don't prescribe evaluation frameworks or diagnostic approaches
@@ -297,7 +299,7 @@ Flag requires_human_review: true if any apply:
 
 ## Workflow Complete
 
-All steps are complete. Update `docs/reports/session_log.md` with your reflection and commit your changes.
+All steps are complete. Update `docs/reports/session_log.md` with your reflection, add any key decisions and their reasoning to `docs/reports/decisions.md`, and commit your changes.
 
 ---
 

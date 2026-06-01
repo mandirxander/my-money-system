@@ -10,11 +10,13 @@
 **For participants:** Reference this file with `@` in Claude Code and say "Let's work through the user research workflow." Claude will guide you through each step.
 
 **For Claude:** When a participant starts this workflow:
-1. Begin with Step 1 and follow each step prompt in order
-2. Complete one step fully before moving to the next
-3. Where a step shows "Confirm before continuing" — ask that question and wait for a response before proceeding
-4. Save outputs to the file paths specified in each step
-5. When you reach the final step, let the participant know the workflow is complete and remind them to update `docs/reports/session_log.md`
+1. Check `docs/reports/workflow_progress.md` — if this workflow shows "in progress", tell the participant which step they completed last and resume from there
+2. Begin with Step 1 and follow each step prompt in order
+3. Complete one step fully before moving to the next
+4. Where a step shows "Confirm before continuing" — ask that question and wait for a response before proceeding
+5. Save outputs to the file paths specified in each step
+6. After each step confirm, update `docs/reports/workflow_progress.md` — set status to "in progress" and record the last step completed
+7. When you reach the final step, update `docs/reports/workflow_progress.md` to "complete", let the participant know the workflow is complete, and remind them to update `docs/reports/session_log.md` and `docs/reports/decisions.md`
 
 - Keep tone conversational and collaborative
 - Use Socratic questioning — don't prescribe research methods or user insights
@@ -41,7 +43,7 @@ Present what you found:
 ### 2. Check if Understanding Has Evolved
 
 Ask reflective questions:
-- "Now that you've done some experimentation with a single prompt, is this still your main concern?"
+- "Now that you've run your experiment and built your spike, is this still your main concern?"
 - "Have you learned something new that changes your understanding of the risk?"
 - "Is there a different quality risk that feels more urgent now in hindsight?"
 
@@ -173,6 +175,19 @@ Understand the end user's current workflow, pain points, next best alternative, 
 3. Next best alternative (what they use/do instead)
 4. Ideal outcome (what would make the biggest difference)"
 
+### Scope your guide for a 20–30 minute conversation
+
+The full guide below has 7 question sections. Read all 7 so you understand the full toolkit — but you won't run all of them well in a single conversation, and a tighter conversation gets better answers. Help the participant select the ~4 that best fit:
+
+- **Anchor on one primary quality risk** as the spine of the guide — this keeps the conversation focused and tells you what you're optimizing the questions around.
+- They can also pick **1–2 secondary risks to listen for**. The same behavioral questions surface signals for multiple risks at once, so they don't need separate questions for each — they just need to know what to listen for.
+- Ask them: *"Your primary risk is [X] and you also want to listen for [Y, Z]. Which 4 sections should you prioritize, and which questions cover more than one risk?"*
+- **Opening and Closing are short — always keep them.**
+- **Default core four:** Current Workflow · Pain Points · Next Best Alternative · Quality Risk Connection
+- Ideal Outcome is usually the first to drop if you're tight on time.
+
+Beyond ~3 risks, the conversation loses focus and the analysis gets muddy — keep it to a primary plus one or two to listen for.
+
 ### 2. Opening/Warm-Up
 
 "Thanks for taking the time. Tell me a bit about your role and what you work on day-to-day?"
@@ -250,7 +265,7 @@ Explain the approach:
 
 "Let's be realistic — you'll probably record and transcribe your interviews so you can stay focused on the conversation. I'll create a prompt you can use with ChatGPT or Claude to analyze the transcript and extract structured insights.
 
-This prompt will be customized to focus on your quality risk and learning goals, so the LLM pulls out exactly what you need."
+This prompt will be customized to focus on your quality risk and learning goals, so the LLM pulls out exactly what you need. If you listened for more than one risk, the prompt will extract signals for each — your primary risk and any secondary risks separately — so the multi-risk listening pays off in the analysis."
 
 ## Prompt Template Structure
 
@@ -264,7 +279,7 @@ Create a customized LLM prompt that:
 
 Create a complete, ready-to-use LLM prompt that includes:
 
-1. **Context Setup**: Brief explanation of their research goal and quality risk
+1. **Context Setup**: Brief explanation of their research goal and quality risk(s) — primary risk plus any secondary risks they listened for, kept distinct
 2. **Analysis Instructions**: What to extract from the transcript
 3. **Output Format**: Structured format for insights
 4. **Evidence Requirement**: Instructions to include direct quotes
@@ -283,7 +298,7 @@ The final prompt should be something they can literally copy and paste into Chat
 
 ## Workflow Complete
 
-All steps are complete. Update `docs/reports/session_log.md` with your reflection and commit your changes.
+All steps are complete. Update `docs/reports/session_log.md` with your reflection, add any key decisions and their reasoning to `docs/reports/decisions.md`, and commit your changes.
 
 ---
 
