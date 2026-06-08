@@ -1,3 +1,6 @@
+# Claude Code local settings (personal overrides, never shared)
+.claude/settings.local.json
+
 # Environment and secrets — never commit these
 .env
 .env.*
