@@ -10,6 +10,7 @@
 **For participants:** Reference this file with `@` in Claude Code and say "Let's work through the implementation workflow." Claude will guide you through each step.
 
 **For Claude:** When a participant starts this workflow:
+
 1. Check `docs/reports/workflow_progress.md` — if this workflow shows "in progress", tell the participant which step they completed last and resume from there
 2. Begin with Step 1 and follow each step prompt in order
 3. Complete one step fully before moving to the next
@@ -21,141 +22,94 @@
 - Keep tone conversational and collaborative
 - Use Socratic questioning — don't prescribe delivery mechanisms or implementation approaches
 - Key principles: Context over assumptions, Quality risk focus, Incremental over ambitious, Simple over clever, Meet users where they are
-- Reads from: `docs/evaluation_design_report.md`, `docs/user_research_plan.md`, `docs/reports/participant_profile.md`, `docs/problem_definition.md`
+- Reads from: `docs/evaluation_design_report.md`, `docs/user_research_plan.md`, `docs/user_research_findings.md`, `docs/reports/participant_profile.md`, `docs/problem_definition.md`
 
 ---
 
 ## Steps
 
-### Step 1: Understand where they are, acknowledge their progress, surface what they learned from previous workflows, identify their biggest quality risk
-**Goal:** Understand where they are, acknowledge their progress, surface what they learned from previous workflows, identify their biggest quality risk
+### Step 1: Ground in what you've learned and confirm your primary quality risk
 
-
-
-## Capture Learning Since Last Interaction
-
-### 1. User Research Insights
-
-If they completed user research:
-- "What did you learn from talking to actual users?"
-- "Did anything users said surprise you or challenge your assumptions?"
-- "How did their feedback change your understanding of the problem?"
-- "What user needs emerged that you hadn't considered before?"
-
-### 2. Evaluation Dataset Testing
-
-If they created and tested evaluation scenarios:
-- "What happened when you ran your test cases?"
-- "Which scenarios revealed the biggest quality risks?"
-- "What patterns did you notice in where things went wrong?"
-- "Did testing reveal any failure modes you hadn't anticipated?"
-
-### 3. Prompt Experimentation
-
-If they've been experimenting with prompts or workflows:
-- "What have you tried building or testing since we last spoke?"
-- "What worked better or worse than you expected?"
-- "What challenges did you run into when trying to implement your ideas?"
-
-### 4. Implementation Progress
-
-If they've started building:
-- "What have you already built or started working on?"
-- "What's working well in your current implementation?"
-- "Where are you getting stuck or seeing quality issues?"
-
-### 5. Quality Risk Validation
-
-Acknowledge their existing priority risk and check if new learning changes it:
-- "From your evaluation work, your priority quality risk was [state their existing risk]"
-- "Given everything you've learned since then — user feedback, testing, experimentation — does this still feel like the right risk to focus on?"
-- "Has anything you've discovered made you think there's a bigger risk you should be worried about?"
-
-**Deliver:** Save to `docs/implementation_design.md` with sections:
-- learning_since_last_interaction (user_research_insights, evaluation_testing_results, prompt_experimentation_findings, implementation_progress_status, updated_quality_risk_focus)
-
-**User Context:**
-- Provides: Their current work status, learnings from previous workflows, user context understanding
-- Receives: A realistic assessment of their progress and focus on their primary quality risk
-
-**Confirm before continuing:** "Does this capture your key learnings and the main quality risk to address?"
-
----
-
-### Step 2: Identify where the end user already works, design the interaction model around agency vs autonomy balance, map concrete touchpoints
-**Goal:** Identify where the end user already works, design the interaction model around agency vs autonomy balance, map concrete touchpoints
-
-
-
-## The Critical Framework: Agency vs Autonomy
-
-**Agency** = Human-like interaction, asks for guidance at judgment points
-- "Here's what I found, which one should I use?"
-- "I'm not sure about this edge case, what do you think?"
-
-**Autonomy** = "Go do it, tell me when done" — for mundane, repetitive work
-- Data transformation, information gathering, formatting, organizing, routine processing
-- Things that follow clear rules
+**Goal:** Pull forward what you already learned from user research and evaluation, confirm your primary quality risk, and note anything that changed — without re-deriving it from scratch
 
 ## Conversation Flow
 
-### 1. Acknowledge Existing Workflow Understanding
+You've already done this thinking in earlier workflows — this step *reads it back*, it doesn't re-interview you. Pull from their existing artifacts rather than asking them to recount everything.
 
-Reference their previous workflows:
-- "Based on your previous work, I understand your user currently [summarize their user_process]"
-- "You mentioned they work in [reference their current_state and tools]"
+### 1. Read What They Already Produced
 
-**Go deeper with specific questions:**
-- "What specific commands/features do they use in [their main tools]?"
-- "When they [specific step from their process], what exactly are they clicking/typing?"
-- "What's the most frustrating 30 seconds in their current workflow?"
+- `docs/user_research_findings.md` — the synthesis and `implications_for_build` (if they did user research)
+- `docs/evaluation_design_report.md` — their prioritized quality risks and test cases
+- Any spike learnings noted in `docs/problem_definition.md`
 
-### 2. Identify Pain Points vs Flow Points
+Summarize it back: "Here's what I'm carrying into the build — your primary quality risk is [X], user research suggested [Y], and your spike showed [Z]."
 
-- **Pain points**: Where are they context-switching, copy-pasting, waiting?
-- **Flow points**: Where are they already comfortable and efficient?
+### 2. Confirm the Primary Quality Risk
 
-Key insight: **Insert automation at pain points, integrate with flow points**
+- "Given everything you've learned, is [their risk] still the right thing to build around?"
+- "Did user research or your spike surface a bigger risk you should center instead?"
 
-### 3. Design Agency/Autonomy Balance
+Only go deeper if their answer signals the risk has genuinely shifted — otherwise confirm and move on.
 
-**For judgment-heavy tasks:**
-- "This feels like a decision that needs your user's context and experience..."
-- "What if the system gathered all the info but asked them to make the call?"
+**Deliver:** Save to `docs/implementation_design.md` with sections:
 
-**For repetitive/mundane tasks:**
-- "This part seems mechanical — could it just run and notify when done?"
-- "What's the cost of a mistake here? (High = more agency, Low = more autonomy)"
-
-Start small with MORE agency (human-in-loop): Let system gather and organize; Let human decide and judge; Automate the tedious, not the critical.
-
-### 4. Map Specific Integration Points
-
-**Input integration:**
-- "When they [specific step from their process], what would be the most natural way for them to invoke our solution?"
-- "Should it be a button in [their main tool], a command they type, or something else?"
-
-**Output integration:**
-- "Should our output go [where they currently put results], or somewhere else?"
-- "Would they want instant results, or is it okay to notify them when done?"
-
-**Intermediate intervention points:**
-- "Based on your agency/autonomy thinking, which moments need their judgment?"
-- "What's their preferred way to review and approve things?"
-
-### 5. Delivery Mechanism Hypothesis
-
-Based on the conversation, help them articulate:
-- MCP server (for CLI/IDE integration)
-- Browser extension (for web-based workflows)
-- Slack bot (for team collaboration contexts)
-- API + simple frontend (for flexible integration)
-- n8n workflow with webhooks (for automation-first users)
-
-**Deliver:** Append to `docs/implementation_design.md` with sections:
-- delivery_context_design (workflow_analysis, delivery_mechanism, interaction_model, agency_vs_autonomy, user_touchpoints, user_journey_notes, integration_touchpoints)
+- learning_since_last_interaction (carried_forward_summary, updated_quality_risk_focus)
 
 **User Context:**
+
+- Provides: Confirmation or correction of the quality risk to build around
+- Receives: A concise, build-focused summary drawn from their own prior work
+
+**Confirm before continuing:** "Does this capture the right quality risk to design the build around?"
+
+---
+
+### Step 2: Design the interaction model — where it fits, and the agency/autonomy balance
+
+**Goal:** Decide where the system fits into the user's routine, and how much it decides on its own vs. asks the user
+
+## Agency vs Autonomy
+
+- **Agency** = asks for guidance at judgment points ("Here's what I found — which should I use?"). Use when a mistake is costly or needs the user's context.
+- **Autonomy** = "go do it, tell me when done." Use for mundane, rule-following work (gathering, formatting, organizing).
+
+Default to **more agency** for the first version: let the system gather and organize, let the human decide and judge. Automate the tedious, not the critical.
+
+## Conversation Flow
+
+### 1. Where does it fit?
+
+Their system runs on the common stack (web-based, Next.js + Vercel), so the question isn't *what kind of thing to build* — it's where it sits in the user's routine:
+
+- "Where in their current routine would they open this — and what would bring them back?" (this is their user return loop from ideation — keep it alive)
+- "What's the most frustrating part of how they do this today?" (put the system at that pain point)
+
+### 2. Pain points vs flow points
+
+- **Pain points** — where are they context-switching, copy-pasting, or waiting? That's where the system earns its keep.
+- **Flow points** — where are they already comfortable and efficient? Don't disrupt these.
+
+Insert the system at the pain points; fit alongside the flow points.
+
+### 3. Balance agency vs autonomy
+
+For each main thing the system does:
+
+- "Does this need the user's judgment, or can it just run?"
+- "What's the cost of a mistake here?" (high → more agency, low → more autonomy)
+
+### 4. Map the integration points
+
+- **Input:** When the user wants to use it, what's the most natural way to start — and what do they need to provide it (a form, a paste, an upload)?
+- **Output:** What do they get back, and where does it go — on screen, saved, sent on?
+- **Review points:** From the agency/autonomy balance, which moments need the user to approve or steer before the system continues?
+
+**Deliver:** Append to `docs/implementation_design.md` with sections:
+
+- delivery_context_design (where_it_fits, interaction_model, agency_vs_autonomy, user_touchpoints)
+
+**User Context:**
+
 - Provides: Information about their end user's existing tools, workflow context, and agency vs autonomy preferences
 - Receives: A clear interaction model that fits their user's context and workflow
 
@@ -163,100 +117,80 @@ Based on the conversation, help them articulate:
 
 ---
 
-### Step 3: Design backend architecture that serves the delivery context, addresses quality risk, maps data flow
-**Goal:** Design backend architecture that serves the delivery context, addresses quality risk, maps data flow
+### Step 3: Map the data flow
 
+**Goal:** Map how information moves through the system — concretely enough to scope and spec the POC. (The deep version — trimming LLM calls, schemas — comes later in the context_architecture workflow.)
 
+## Match their technical level
 
-## Technical Level Adaptation
+Check their participant profile and adapt:
 
-Check their participant profile to understand technical background.
+- **Non-technical:** talk in behavior and flow, no jargon. "What does the system need from the user to start? What does it need to remember? Where does the information come from? What needs to talk to what?"
+- **Technical:** use real terms — state, data flow input → LLM → output, which APIs/services.
 
-### For Non-Technical PMs/Business Folks
+## Start from what you already know
 
-**Your approach:**
-- NO jargon (no "API endpoints", "state machines", "data schemas")
-- Talk in terms of BEHAVIOR and FLOW
-- Ask about what happens, infer technical details yourself
-- Use analogies and plain language
+Don't make them recount from scratch — pull from their artifacts and Step 2, then have them correct your draft:
 
-**Question style:**
-- "When someone starts the workflow, what information do you need from them?"
-- "What does the system need to remember between steps?"
-- "Where does the information come from?"
-- "What needs to talk to what?"
-
-### For Technical Builders (Engineers, Technical PMs)
-
-**Your approach:**
-- Use proper technical terminology
-- Get into architecture depth
-- Discuss patterns, trade-offs, technical decisions
-
-**Question style:**
-- "How are you thinking about state management?"
-- "What's your data flow from input to LLM to output?"
-- "Which external APIs or services do you need to integrate?"
+- their data source / connection → `problem_definition.md` (Requirements Mapping) and the interaction model from Step 2
+- what users actually need → `user_research_findings.md`
+- the quality risk to protect → Step 1
 
 ## Conversation Flow
 
-### 1. Data Flow Mapping
+### 1. Trace the main path
 
-Start with the user journey from Step 2 and trace data movement:
-- Start at input touchpoint: "User provides [X], what happens next?"
-- Follow the flow: "Then the system needs to... and after that..."
-- End at output touchpoint: "And finally the user gets [Y]"
+Propose a first-draft happy path from what you know, then have them correct it, end to end:
 
-### 2. External Integrations
+- "The user provides [X] → the system does [what] → the Claude API call [does what] → the user gets [Y]."
+- "What does the system need to remember between steps?"
 
-- "What external systems or data sources does this need?"
-- "Where does information come from beyond the user?"
+### 2. Name the external connections (and confirm the ones they chose)
 
-For technical folks: Which APIs? Authentication approach? Rate limits? Webhook support or polling?
+- "What does this need beyond the user and the LLM?" — list each external data source or service it relies on, plus Supabase for storage.
+- **This is where the draft becomes real.** Back in Part 1 they mapped a first-draft data source and connection; the spike tested just one to stay simple. Now decide the actual set the POC needs. The common stack (Supabase, Claude API) is settled, but their own connections aren't — and the POC may genuinely need more than one if the idea depends on it.
+- For each connection, **don't just ask whether it's right — help them judge it.** Some participants won't know if MCP vs. API was the correct call. Look at the actual service: does it offer a ready-made MCP server, or is a plain API call simpler here? Explain the tradeoff in plain language, recommend the better fit for their case, and confirm together:
+  - "Your system connects to [their data source(s) / service(s)]. Here's my read on whether those are still the right choices, and whether MCP or an API is the better way in for each — does that match what you're seeing?"
+- Include the connections the POC genuinely needs — that may be more than one — but don't add any it can do without. If something would serve them better long-term, note it as a future option rather than expanding scope now.
 
-### 3. Decision Points & Branching Logic
+### 3. Mark the human-judgment points
 
-- "Are there different paths this could take based on the situation?"
-- "What would make it do one thing vs another?"
+- "Where does the system pause for the user to decide, review, or approve?" (ties back to the agency/autonomy balance from Step 2)
 
-For technical folks: What's your conditional logic? Error handling strategy? Retry logic?
-
-### 4. Human Judgment Points (Agency Touchpoints)
-
-- "When the system needs human judgment, what does it need to show them?"
-- "How does it present options or ask for direction?"
+That's enough to scope and spec. You'll inventory and tighten the actual LLM calls and data flow in the later context_architecture workflow.
 
 **Deliver:** Append to `docs/implementation_design.md` with sections:
-- backend_design (technical_approach, data_flow_architecture, integration_points, integration_notes, decision_points, human_judgment_points)
+
+- data_flow (main_path, external_connections, self_chosen_components, human_judgment_points)
 
 **User Context:**
-- Provides: Their technical comfort level and integration preferences
-- Receives: A backend architecture design appropriate to their technical level
 
-**Confirm before continuing:** "Does this backend design make sense and address your quality risk?"
+- Provides: Their sense of how data should move and what the system connects to
+- Receives: A concrete data-flow map to scope and spec the POC against
+
+**Confirm before continuing:** "Does this capture the main path and connections well enough to scope the POC?"
 
 ---
 
-### Step 4: Help them define MVP scope using quality risk as north star — what to build first to validate core hypothesis fastest
-**Goal:** Help them define MVP scope using quality risk as north star — what to build first to validate core hypothesis fastest
+### Step 4: Define your POC scope — what to build first
 
+**Goal:** Help them decide what to build first — the quality-risk core — and pare the idea down to what's deliverable in the time left, without limiting their ambition
 
+## Right-size the first version
 
-## The Core Tension
+They've just designed something comprehensive. This step decides what to build *first* — and, if the whole idea is too big to deliver across the remaining sessions, helps them pare it down to what they *can* deliver. They're not shrinking their ambition; they're choosing the **order** and telling Claude what to prioritize.
 
-They've just designed something comprehensive. Now you need to help them cut it down without losing the essence.
-
-**The key insight:** v1 is not for users, it's for learning. The only question that matters is: "Does this help me test my primary quality risk?"
+**The key insight:** your primary quality risk sets the order. The fastest version that tests whether that risk is real is what you build first. Everything else still matters and stays on the table — the quality risk just decides what comes first.
 
 ## Conversation Flow
 
-### 1. Establish the North Star
+### 1. Lead with your quality risk
 
-"Let's come back to your primary quality risk: [state their risk from Step 1]"
+"Let's come back to your primary quality risk: [state their risk from Step 1]."
 
-"Everything we build next should help you test whether this risk is real, and how bad it is."
+"Let that decide what to build first — the fastest version that tests whether this risk is real and how bad it is."
 
-"That's the ONLY goal for v1. Not production-ready, not feature-complete, not user-ready. Just: does it teach us about this risk?"
+"It's not the only thing that matters: you're building toward a real, working product with a return loop. The quality risk just tells you what to prioritize now, so you learn the most before investing in the rest."
 
 ### 2. Ask What They Want to Try First
 
@@ -269,24 +203,31 @@ For each thing they mention, ask the hard question: **"How does [component X] he
 ### 4. The Ruthless Filter
 
 For each component, apply this filter together:
+
 - **Essential (must have):** Directly tests the quality risk; without it, you learn nothing
-- **Nice to have (defer):** Makes it better/cleaner but doesn't change learning; could hardcode or manually handle for v1
-- **Scope creep (cut):** Doesn't relate to quality risk; future feature bleeding into v1
+- **Nice to have (defer):** Makes it better/cleaner but doesn't change learning; could stand in for it or handle manually for the POC
+- **Scope creep (cut):** Doesn't relate to quality risk; future feature bleeding into the POC
 
-### 5. Hardcode vs Build Decision
+### 5. Cut or simplify to fit your scope (if needed)
 
-"Could you hardcode [X] for v1 and make it dynamic in v2?"
+Only if the first version is still too big — this is about **build effort.** Some pieces are expensive to build properly. You can often simplify a high-effort piece for now so they reach a testable product faster, then build it out more fully later. The full product still gets there; they're just sequencing the effort.
 
-Examples:
-- "Could you test with just YOUR data first, not build user auth?"
-- "Could you manually trigger it instead of building the automation?"
-- "Could you use a simple text file instead of a database?"
+**Walk them through it, don't prescribe.** For each high-effort piece, weigh it together:
 
-**The principle:** If you can hardcode it without invalidating the quality risk test, do it.
+- "Pick one high-effort piece of your system (call it [X]). Would building the full version now teach you anything more about your quality risk than a simpler version would? If not, simplify it for now and build out [X] more fully later."
+
+Examples of ways to simplify (offer only if they need them):
+
+- Test with just YOUR data first, before building user accounts
+- Manually trigger something instead of building the automation
+- A simple stored file or table instead of a full data model
+
+**The principle:** if simplifying a piece lets them build and learn sooner *without* changing what the test teaches — and they'll build the real thing later — it's a smart scope call, not a compromise.
 
 ### 6. The Single Path Rule
 
 "Let's define THE path — not multiple paths, just one:"
+
 - One input scenario (not all edge cases)
 - One happy path through the flow (not error handling)
 - One output format (not multiple options)
@@ -294,116 +235,86 @@ Examples:
 ### 7. Define "Done" Clearly
 
 Get very specific:
+
 - **NOT:** "The workflow runs"
 - **YES:** "I can give it [X input], it produces [Y output], and I can see if [quality risk] occurred"
 
-### 8. The Defer List
+### 8. What's not in the first version
 
-"Let's list what we're explicitly deferring to v2:"
+Everything else simply comes after the first version. Be realistic about what fits in the sessions left: some of it you'll add as you go (e.g., tighter error and edge-case handling, UI polish, deployment), but bigger pieces — user accounts, multiple-user support, notifications, logging/monitoring, lots of configuration — are usually a **future state beyond the class** for a project this size, and that's expected.
 
-Common deferrals: Additional integrations, edge case handling, error recovery, user authentication, multiple user support, UI polish, automated triggers, notification systems, logging/monitoring, configuration options
+**Capture what you're placing beyond the class.** If you decide something is a future state beyond the class, have Claude save it to your project — it goes in the `future_state_beyond_class` part of `implementation_design.md` — so the idea is recorded and out of your class scope: parked, not lost. Everything else is understood to be coming, just not first.
 
 **Deliver:** Append to `docs/implementation_design.md` with sections:
-- mvp_scope_definition (first_implementation_target, core_path_only, feature_justification, hardcoded_elements, definition_of_done, deferred_features)
+
+- poc_scope_definition (build_first_target, core_path_only, feature_justification, simplified_elements, definition_of_done, future_state_beyond_class)
 
 **User Context:**
-- Provides: Their feature priorities and understanding of what's essential vs nice-to-have
-- Receives: A focused MVP scope that directly tests their main quality concern
 
-**Confirm before continuing:** "Is this the right minimal scope to test your quality risk effectively?"
+- Provides: Their feature priorities and understanding of what's essential vs nice-to-have
+- Receives: A focused POC scope that directly tests their main quality concern
+
+**Confirm before continuing:** "Is this the right first version to test your quality risk — without cutting what your product needs to actually work?"
 
 ---
 
-### Step 5: Create detailed MVP specs that a coding agent can use to implement the solution
-**Goal:** Create detailed MVP specs that a coding agent can use to implement the solution
+### Step 5: Generate your POC specs
 
+**Goal:** Turn the scope into specs a coding agent (Claude Code) can build from — on the common stack
 
+## Platform Strategy
 
-## Platform Recommendation Strategy
+There's no platform to choose — every project builds on the common stack: **Next.js + TypeScript**, **Tailwind + shadcn/ui**, **Supabase** (database/storage), **Claude API** (Anthropic SDK), deployed to **Vercel**, secrets in `.env.local`. The external connections they chose themselves were confirmed in Step 3. The specs target this stack.
 
-### Default Recommendation: n8n
-
-**Lead with n8n for most participants because:**
-- Visual workflow builder (low learning curve)
-- Built-in integrations with 400+ services
-- Can add custom code nodes when needed (JavaScript/Python)
-- Built-in error handling and retries
-- Easy to iterate and debug visually
-- Free self-hosted or cloud option
-
-**When to lean toward n8n:**
-- Non-technical participants
-- Heavy integration requirements
-- Need to iterate quickly
-
-### Alternative: LangGraph
-
-**Consider LangGraph when:**
-- Participant is comfortable with Python
-- Workflow has complex conditional logic/branching
-- Need fine-grained control over LLM orchestration
-- Comfortable with code-based development
-
-**Trade-offs:** More control, more code to write; better for complex state management; steeper learning curve.
+If, while speccing, something about the stack genuinely wouldn't serve their project, raise it. Only switch the POC off the common stack if they have a good reason and are sure they want to — otherwise note it as a future option and keep building on the common stack.
 
 ## Conversation Flow
 
-### 1. Present Recommendation
+### Generate the POC specs
 
-Start with your recommendation based on their context.
+**These are the preliminary specs for the first version of your POC, not a locked final spec.** Later workflows refine and extend it from here. So spec the first version confidently — it's the blueprint Claude Code starts from, not the finish line.
 
-Explain why briefly: matches their delivery context, handles their integrations, appropriate for their technical level.
-
-### 2. Discuss Trade-offs Openly
-
-Don't oversell — present honest trade-offs. If they choose against your recommendation and are clearly choosing wrong (e.g., non-technical person choosing LangGraph), offer gentle pushback.
-
-### 3. Let Them Choose
-
-"What feels right to you? Which would you rather spend time learning?"
-
-### 4. Generate Detailed MVP Specs
-
-Based on their choice, create comprehensive implementation specifications:
+Based on their scope (Step 4), data flow (Step 3), and interaction model (Step 2), have Claude draft the specs below. **Claude drafts, but it's their spec** — walk them through each part so they can review, correct, and add anything before it's finalized.
 
 **Data Flow Requirements:**
+
 - Input format and validation requirements
 - Data transformations needed at each step
 - Output format and delivery mechanism
 - State management needs
 
 **Integration Specifications:**
+
 - External APIs required (with authentication methods)
 - Database requirements
 - Third-party services needed
 - Human-in-loop touchpoints and approval mechanisms
 
 **Quality Risk Testing Requirements:**
+
 - Specific test scenarios from their evaluation dataset
 - Success criteria and measurement methods
 - Error conditions to handle
 - Monitoring and observability needs
 
-**Platform-Specific Guidance:**
-For n8n: Trigger mechanism, required node types, credential configuration, error handling approach
-For LangGraph: State structure requirements, node function specifications, conditional logic requirements, integration patterns
-
 **Validation Check:**
-- [ ] Scaffold matches their reduced MVP scope
-- [ ] Platform choice makes sense for their technical level
-- [ ] Implementation guide has concrete next steps
-- [ ] Quality risk testing is explicit in the guide
-- [ ] Evaluation dataset is referenced for testing
+
+- Specs match the reduced POC scope (one path, not everything)
+- Built on the common stack, plus the data sources / connections they chose in Step 3
+- Concrete enough for Claude Code to start building
+- Quality risk testing is explicit and references the evaluation dataset
 
 **Deliver:**
-1. Save to `docs/specs/mvp_specs.md` with sections: development_requirements, integration_specifications, data_flow_specifications, platform_implementation_requirements, human_in_loop_requirements, quality_risk_testing_specifications, error_handling_requirements, success_criteria_and_testing
-2. Append to `docs/implementation_design.md` with sections: implementation_platform_selection, implementation_approach
+
+1. Save to `docs/specs/poc_specs.md` with sections: data_flow_specifications, integration_specifications, quality_risk_testing_specifications, human_in_loop_requirements, success_criteria
+2. Append to `docs/implementation_design.md` with section: implementation_approach
 
 **User Context:**
-- Provides: Their platform preferences and technical comfort level
-- Receives: Comprehensive technical specifications for implementing their MVP
 
-**Confirm before continuing:** "Does this implementation approach feel right for your technical comfort level?"
+- Provides: Confirmation the scope and approach feel right, plus their corrections and additions to the draft
+- Receives: Initial build specs for their POC on the common stack
+
+**Confirm before continuing:** "Do these specs give Claude Code enough to start building your POC?"
 
 ---
 
@@ -415,7 +326,10 @@ All steps are complete. Update `docs/reports/session_log.md` with your reflectio
 
 ## Output Artifacts
 
-| File | Location | Description |
-|------|----------|-------------|
-| `implementation_design.md` | `docs/` | Progress assessment, delivery context, backend design, MVP scope, implementation platform selection |
-| `mvp_specs.md` | `docs/specs/` | Technical specifications for implementing the MVP |
+
+| File                       | Location      | Description                                                                                         |
+| -------------------------- | ------------- | --------------------------------------------------------------------------------------------------- |
+| `implementation_design.md` | `docs/`       | Quality risk, interaction model, data-flow map, POC scope (what to build first), and the implementation approach |
+| `poc_specs.md`             | `docs/specs/` | Initial build specs for the first version of the POC                                                  |
+
+

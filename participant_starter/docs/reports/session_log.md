@@ -57,3 +57,31 @@
 **Next session focus:** Testing prompts
 
 ---
+
+## Session 3 — 2026-06-08
+
+**Goal for this session:** Work through Session 2 homework: map project requirements, install the common stack, and begin the evaluation dataset workflow.
+
+**What we did:**
+- Completed Part 1: mapped all 8 project requirements (4 stack, 4 project-specific) and saved to docs/problem_definition.md
+- Completed Part 2: scaffolded Next.js + Tailwind + shadcn/ui, created .env.local with Anthropic and Supabase credentials (Node already installed)
+- Began Part 3 (evaluation dataset workflow, Step 1): ran Scenarios 1, 2, and 3 from prompts/testing_prompt.md in Claude.ai
+- Captured experiment findings in docs/evaluation_design_report.md
+- Updated docs/problem_definition.md with new finding: cognitive load at point of emotional stress
+- Began Step 2: surfaced quality dimensions from testing (consistency, emotional calibration, output format/structure)
+
+**What we tried that didn't work:**
+- The testing scenarios revealed a critical gap: the conversational piece needs significant work — response length and structure are not ready for a user who is emotionally overwhelmed
+
+**What we learned:**
+- Testing assumptions is vital — the experiment made concrete what planning couldn't. The conversational quality of the check-in is the hardest and most important problem to solve. This approach (test before build) is one to carry into all future projects.
+
+**Blockers or open questions:**
+- Sensitivity level question unresolved: should emotional calibration be explicit (user sets it) or inferred (system reads it from input)?
+- Step 2 of evaluation dataset workflow not yet complete
+- Vercel not yet connected (waiting until spike is ready to deploy)
+- API keys shared in chat — both Anthropic and Supabase keys should be regenerated
+
+**Next session focus:** Finish the sensitivity level question and the spike build (Rung 2)
+
+---

@@ -167,6 +167,8 @@ Understand the end user's current workflow, pain points, next best alternative, 
 
 ## Conversation Flow
 
+> **Generate these dynamically for this participant's project.** The sections below are a general template — adapt every question to the participant's specific idea and to whether their users live in a *work* or a *personal* context. Don't assume a workplace, a "role," or professional tooling unless the project actually calls for it. Have Claude rewrite the example wording to fit the project rather than using it verbatim.
+
 ### 1. Frame the Interview Guide
 
 "Let's create your conversation guide. This isn't a rigid script — it's a framework for having a real conversation. Questions will flow in this order:
@@ -190,16 +192,18 @@ Beyond ~3 risks, the conversation loses focus and the analysis gets muddy — ke
 
 ### 2. Opening/Warm-Up
 
-"Thanks for taking the time. Tell me a bit about your role and what you work on day-to-day?"
+Open with a warm, general question that fits *this* participant's project — their users might be in a work setting or a personal one, so don't assume a job or a role. Have Claude generate the opener from the participant's project context. Examples:
+- Work context: "Thanks for taking the time. Tell me a bit about your role and what you work on day-to-day."
+- Personal context: "Thanks for taking the time. Tell me a bit about how [the problem area] fits into your day-to-day life."
 
-**What to listen for:** Daily context, tools they use, how their work is structured
+**What to listen for:** The everyday context around the problem — what surrounds it, what tools or habits they use, how it fits into their work or life
 
 ### 3. Current Workflow Questions (2-3 questions)
 
 **Question format:** "How do you currently [do X]?"
 - "Walk me through how you currently [their problem area]"
 - "What does that process look like from start to finish?"
-- "What tools do you use to do this?"
+- "What tools, apps, or methods do you use to do this?"
 
 **What to listen for:** Where they pause or express friction, workarounds they've built, what's manual vs automated
 
@@ -296,6 +300,53 @@ The final prompt should be something they can literally copy and paste into Chat
 
 ---
 
+### Step 5: Run your conversations and synthesize what you learned
+**Goal:** Hold the conversations, run the transcripts through your analysis prompt, and turn the raw insights into a synthesis you can build from
+
+## Conversation Flow
+
+This is where the research pays off — you actually talk to people and make sense of what they say. Don't stop at the prompt; run it.
+
+### 1. Hold the Conversations
+
+- Use the guide from Step 3 as a flexible framework, not a script.
+- Talk to the 2–3 people you already lined up — friends, family, or anyone convenient who can speak from the target user's perspective (even if that's you). A couple of real conversations beats none.
+- Capture each one: record and transcribe if you can (so you can stay present in the conversation), or take notes during and right after.
+
+### 2. Run Each Transcript Through Your Analysis Prompt
+
+- Open `prompts/interview_analysis_prompt.txt`.
+- For each conversation, paste the prompt plus that transcript (or your notes) into Claude and save the structured output.
+- Do this once per conversation so each one's signals stay distinct.
+
+### 3. Synthesize Across Conversations
+
+Bring the per-conversation analyses together and look across them with Claude:
+- "Across these conversations, what patterns show up around [their quality risk]?"
+- Did the quality risk turn out to be real for these people, or were we imagining it?
+- How do they currently handle the problem — what's their next best alternative, and where does it fall short?
+- What surprised you or challenged an assumption?
+
+Keep it honest: a small sample of convenient testers gives *directional* signal, not proof. Note where you'd want more confidence.
+
+### 4. Capture What It Changes
+
+Pull out the few findings that should actually influence what you build next, and note any change to your primary quality risk.
+
+**Deliver:** Save to `docs/user_research_findings.md` with sections:
+- conversations_summary (who you talked to, and in what context)
+- per_conversation_insights (the analysis output for each conversation)
+- cross_conversation_synthesis (patterns, quality_risk_validation, current_alternatives, surprises)
+- implications_for_build (what this changes about your solution or quality risk)
+
+**User Context:**
+- Provides: Their interview transcripts/notes and reactions to the synthesized patterns
+- Receives: A synthesis of what users actually said and what it means for their build
+
+**Confirm before continuing:** "Does this capture what you learned and how it should shape what you build next?"
+
+---
+
 ## Workflow Complete
 
 All steps are complete. Update `docs/reports/session_log.md` with your reflection, add any key decisions and their reasoning to `docs/reports/decisions.md`, and commit your changes.
@@ -308,3 +359,4 @@ All steps are complete. Update `docs/reports/session_log.md` with your reflectio
 |------|----------|-------------|
 | `user_research_plan.md` | `docs/` | Quality risk focus, recruitment plan, conversation guide |
 | `interview_analysis_prompt.txt` | `prompts/` | LLM prompt for analyzing interview transcripts |
+| `user_research_findings.md` | `docs/` | Synthesis of the conversations: per-conversation insights, cross-conversation patterns, and implications for the build |

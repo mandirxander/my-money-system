@@ -6,7 +6,7 @@ Claude updates this file automatically after each step confirm. Check here to re
 |----------|--------|---------------------|
 | orientation | not started | — |
 | ideation | not started | — |
-| evaluation_dataset | not started | — |
+| evaluation_dataset | in progress | Step 1 — chat experiment complete |
 | user_research | not started | — |
 | evaluation_at_scale | not started | — |
 | user_experience | not started | — |

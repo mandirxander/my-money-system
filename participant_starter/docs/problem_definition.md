@@ -90,6 +90,10 @@ Personal finance — budgeting, debt management, saving, investing — structure
 - **Proactive engagement:** Not push notifications — those get swiped away. The system should feel like checking in with someone, not something. Intentional, conversational, personalized. The return loop is rewarding, not nagging.
 - **Visual progress is functional, not decorative:** Progress bars, pie charts, milestone celebrations — these create the dopamine hit that makes coming back feel worthwhile. Gamification (strategy game feel) is a core engagement mechanic, not a nice-to-have.
 
+### New Finding — Rung 1 Experiment (2026-06-08)
+- **Cognitive load at point of emotional stress is a real constraint:** When users arrive overwhelmed (crisis, setback, drift), long AI responses make it worse — the medium fights the message. The system must constrain response length to avoid adding to the burden it's meant to relieve.
+- **V1 decision:** Shorter, structured responses — constrain the check-in prompt to a tight format (e.g. 3 short paragraphs max). Voice output flagged for V2.
+
 ### Beliefs to Test
 - Will the conversational check-in model feel meaningfully different from a notification? Does the "talking to someone" framing actually increase follow-through?
 - Can the Baby Steps framework onboard someone who arrives skeptical or unfamiliar with Ramsey — and do the results convert them?
@@ -223,6 +227,24 @@ Conversational throughout. AI monitors quietly between sessions and arrives at c
 - Bi-weekly check-in brief with summary, drift flags, wins, and one focused next action
 - Decision support responses grounded in Baby Steps framework and family's real situation
 - Milestone celebrations when a Baby Step is completed
+
+---
+
+## Requirements Mapping
+
+| Requirement | How my project meets it |
+|---|---|
+| LLM integration | Claude API (Anthropic SDK) |
+| Persistence | Supabase |
+| UI + live URL | Next.js (Tailwind + shadcn/ui) on Vercel |
+| Secrets | API keys in `.env.local` |
+| Data source | Manual conversational input + CSV/spreadsheet upload (Excel budget export) |
+| Return loop | Bi-weekly check-in conversation (AI-prepared brief: drift, wins, Baby Steps progress) + visual progress dashboard |
+| Closed-loop feedback | Spending patterns surface recurring drift over time; check-in responses and decisions are stored and shape the next brief; Baby Steps progress updates what the system prioritizes and surfaces |
+| MCP / external API | SendGrid (email API) — bi-weekly check-in reminders |
+
+**V2 notes:**
+- Calendar integration (Google Calendar / Outlook) for scheduling bi-weekly check-ins with notifications — parked from V1 to reduce OAuth complexity
 
 ---
 

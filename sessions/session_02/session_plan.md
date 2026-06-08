@@ -62,11 +62,11 @@ By the end of this session, participants will be able to:
   - `/help` to view all commands; `/skills` to view all loaded skills
 - **Git cheat sheet** *(reference: `handouts/git_cheat_sheet.md`)*
   - Walk through the four-place mental model: Working Directory → Staging → Local Repo → Remote
-  - Cover the core commands: `git status`, `git add .`, `git commit -m`, `git push`, `git pull`
+  - Cover the core commands: `git status`, `git add .`, `git commit -m`, `git push`, `git fetch`
   - `git add .` vs. specific files — when each makes sense; `.gitignore` is what makes `git add .` safe
   - `git commit -am` shortcut — what it does and the one catch (new files still need `git add` first)
   - Using the CLI for basic operations saves tokens vs. asking Claude
-  - Pull from the public repo now to get session 2 files
+- **Getting course updates** *(reference: `handouts/git_cheat_sheet.md` → "Getting course updates into your project")*: their project was made from the template ("Use this template"), so it has no git connection to the public repo — their own git commands only sync their own repo, and `git pull`/`git merge` won't work (unrelated histories). To get new or changed course files (updated workflows, new handouts), they add the public repo as a `course` remote, `git fetch course`, then pull in individual files with `git checkout course/main -- <file>` (reviewing each diff first so they don't clobber their personalized `CLAUDE.md`/`docs/`/`prompts/`) — or have Claude Code do it. The cheat sheet also shows how to wrap this into a reusable sync skill (Option 2). Have them do this now to refresh the Session 2 workflow files before the homework.
 - **Move `CLAUDE.md` to your project root:** Claude Code reads `CLAUDE.md` automatically only from the root of your project — if it's inside `participant_starter/`, Claude won't see it. Move it now if you haven't already:
   ```
   # from the repo root

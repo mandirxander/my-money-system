@@ -91,13 +91,15 @@ This is the main work this week. Open `@workflows/evaluation_dataset.md` and wor
 
 **Roughly how long this takes** (a guide, not a stopwatch — the spike is the variable):
 
-| Stage | Est. time |
-| ----- | --------- |
-| Rung 1 — chat experiment (Step 1) | 30–60 min |
-| Quality risks + test-case design (Steps 2–7) | 1.5–2.5 hrs |
-| Project-specific connection setup (before Step 8) | 20–45 min |
-| Rung 2 — build the spike + run your test cases (Step 8) | 1–3 hrs |
-| **Total** | **~3.5–7 hrs** |
+
+| Stage                                                   | Est. time      |
+| ------------------------------------------------------- | -------------- |
+| Rung 1 — chat experiment (Step 1)                       | 30–60 min      |
+| Quality risks + test-case design (Steps 2–7)            | 1.5–2.5 hrs    |
+| Project-specific connection setup (before Step 8)       | 20–45 min      |
+| Rung 2 — build the spike + run your test cases (Step 8) | 1–3 hrs        |
+| **Total**                                               | **~3.5–7 hrs** |
+
 
 If the spike is eating your time, get *something* running rather than something complete — a single test case against live output beats a perfect setup you never finish. Bring whatever you have to Session 3.
 
@@ -120,9 +122,9 @@ Aim for **2–3 participants** — keep it lightweight. **Stop after Step 2.** Y
 
 ## Part 5: Update Your CLAUDE.md
 
-Now that you've built a first spike and learned from it, update your CLAUDE.md so Claude has the right context every session:
+Now that you've built a first spike and learned from it, tell Claude to update your CLAUDE.md so Claude has the right context every session:
 
-- Update your **Project Phase** to Prototyping
+- Make sure Claude updates your **Project Phase** to Prototyping
 - Project-specific goals and what "done" looks like for the prototype
 - Tech stack in use
 - Your **top quality risk** and what running the experiment + spike taught you about it
@@ -138,4 +140,4 @@ After completing the parts above, write a short reflection (a few sentences to a
 2. **What is your top quality risk, and did building the spike (Rung 2) change how you see it?** What broke when the data was real and connected versus hand-fed?
 3. **One instruction you added to your CLAUDE.md** based on something you learned building this week — what was it and why?
 
-Post your reflection in the Teams channel before Session 3.
+Post your reflection in the Teams channel before Session 3. (and ask Claude to save your reflections to you session_log !)
