@@ -27,11 +27,14 @@ your-project/
 │   │   └── session_log.md           ← What you did and tried each session — running narrative
 │   ├── problem_definition.md    ← What you're solving and why (Session 2)
 │   ├── research/                ← Spike research (S2 homework) + user research notes (S3)
-│   └── specs/                   ← UX spec and POC specs (Sessions 4–5)
+│   └── specs/                   ← POC specs (S3), UX spec (S5), deployment specs (S6)
 │
 ├── prompts/                     ← Prompt templates you write and refine (Sessions 2–4)
 │
+├── guides/                      ← Standing reference guides (llm_api_guide, workflow_cards, …)
+│
 ├── workflows/                   ← Course workflow guides — reference with @workflows/[name].md
+│   └── cards/                   ← Your own reusable workflow cards (Sessions 4–6)
 │
 └── src/                         ← Your source code — add this when you start building (Session 4+)
 ```
@@ -47,26 +50,32 @@ your-project/
 ## Artifacts You'll Produce (and where they go)
 
 
-| When        | Artifact                                | Location       |
-| ----------- | --------------------------------------- | -------------- |
-| S1 homework | participant_profile.md                  | docs/reports/  |
-| S1 homework | CLAUDE.md                               | project root   |
-| S1 homework | problem_definition.md                   | docs/          |
-| S1 homework | testing_prompt.md                       | prompts/       |
-| S2 homework | evaluation_design_report.md             | docs/          |
-| S2 homework | evaluations_data.csv                    | data/          |
-| S2 homework | spike/                                  | docs/research/ |
-| S3 homework | user_research_plan.md                   | docs/          |
-| S3 homework | interview_analysis_prompt.txt           | prompts/       |
-| S3 homework | user_research_findings.md               | docs/          |
-| S3 homework | implementation_design.md                | docs/          |
-| S3 homework | poc_specs.md                            | docs/specs/    |
-| S3 homework | app shell (scaffolded, empty)           | src/           |
-| S4 homework | built POC + first UI                    | src/           |
-| S5 homework | context_architecture_design.md          | docs/          |
-| S5 homework | user_experience_spec.md                 | docs/specs/    |
-| S5 homework | UI polish (applied to your interface)   | src/           |
-| S6 homework | deployment_design.md                    | docs/          |
+| When           | Artifact                              | Location         |
+| -------------- | ------------------------------------- | ---------------- |
+| S1 homework    | participant_profile.md                | docs/reports/    |
+| S1 homework    | CLAUDE.md                             | project root     |
+| S2 homework    | problem_definition.md                 | docs/            |
+| S2 homework    | testing_prompt.md                     | prompts/         |
+| S2 homework    | evaluation_design_report.md           | docs/            |
+| S2 homework    | evaluations_data.csv                  | data/            |
+| S2 homework    | spike/                                | docs/research/   |
+| S3 homework    | user_research_plan.md                 | docs/            |
+| S3 homework    | interview_analysis_prompt.txt         | prompts/         |
+| S3 homework    | user_research_findings.md             | docs/            |
+| S3 homework    | implementation_design.md              | docs/            |
+| S3 homework    | poc_specs.md                          | docs/specs/      |
+| S3 homework    | app shell (scaffolded, empty)         | src/             |
+| S4 homework    | built POC + first UI                  | src/             |
+| S4 homework    | first workflow card                   | workflows/cards/ |
+| S5 homework    | context_architecture_design.md        | docs/            |
+| S5 homework    | user_experience_spec.md               | docs/specs/      |
+| S5 homework    | UI polish (applied to your interface) | src/             |
+| S5 homework    | workflow card                         | workflows/cards/ |
+| S6 homework    | evaluating_for_scale_design.md        | docs/            |
+| S6 homework    | deployment_design.md                  | docs/            |
+| S6 homework    | deployment_specs.md                   | docs/specs/      |
+| S6 homework    | workflow card                         | workflows/cards/ |
+| S7 (optional)  | demo_plans.md                         | docs/            |
 
 
 *Most project work now happens in homework, driven by the workflows (~2 per week). "When" tracks the session whose homework first produces each artifact. Sessions 3–6 are being finalized to the new format, so a few rows may still shift.*
