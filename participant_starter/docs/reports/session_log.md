@@ -85,3 +85,31 @@
 **Next session focus:** Finish the sensitivity level question and the spike build (Rung 2)
 
 ---
+
+## Session 4 — 2026-06-16
+
+**Goal for this session:** Finish the sensitivity level question and build the spike (Rung 2)
+
+**What we did:**
+- Ran /sync-upstream — pulled in new Session 3 guides (LLM API guide, workflow cards, workflow toolbelt map, Supabase security handout)
+- Resolved sensitivity level question: explicit mood check before each check-in for V1, inferred tone adjustment flagged for V2
+- Completed Steps 2–7 of evaluation dataset workflow: quality dimensions, risk hypotheses, prioritization, test case design (8 cases), learning objectives, CSV evaluation matrix
+- Installed Anthropic SDK (@anthropic-ai/sdk v0.104.2)
+- Built the spike: CSV upload → Claude API call → structured check-in response (app/api/checkin/route.ts + updated app/page.tsx)
+- Created 7 test CSV variations in docs/research/spike/test-data/
+- Hit API key blocker — personal key has no credits, shared key from Sunday not received
+
+**What we tried that didn't work:**
+- Running spike test cases — blocked by API key with no credits. Discovered that the Claude API requires a separate paid subscription from Claude Pro.
+
+**What we learned:**
+- There's a lot that goes into building a product that isn't visible until you're in it. Testing assumptions with AI as a coworking partner is genuinely useful in a way that was surprising.
+
+**Blockers or open questions:**
+- API key unresolved: need Sunday's shared key to run spike test cases
+- Spike test cases not yet run — all 8 CSV variations ready, waiting on key
+- Vercel not yet connected
+
+**Next session focus:** Get Sunday's key and finish the spike tests
+
+---

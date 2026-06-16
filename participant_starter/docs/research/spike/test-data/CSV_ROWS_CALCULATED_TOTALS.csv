@@ -1,0 +1,9 @@
+Income,Bills,Due Date,Amount,Paid
+Salary,,, 3200,Yes
+Side income,,,400,Yes
+Total Income,,,3600,
+Remaining,,,1130,
+,Rent,June 1,1800,Yes
+,Car payment,June 5,450,Yes
+,Utilities,June 10,120,No
+,Groceries,June 12,350,No

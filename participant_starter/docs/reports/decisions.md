@@ -43,3 +43,27 @@
 **Tradeoffs:** Manual entry adds friction; CSV upload requires the user to export from Excel. Accepted as the right scope boundary for V1.
 
 ---
+
+## 2026-06-16 — Sensitivity level: explicit mood check for V1
+**Decision:** User sets emotional calibration explicitly before each check-in via a mood selector (Good / Stressed / Crisis). Inferred tone adjustment flagged for V2.
+**Why:** Explicit is simpler to build and gives the system reliable signal without guessing. Inferred requires prompt logic to detect emotional cues and may misread tone.
+**Alternatives considered:** Inferred from input text (system reads emotional state from what the user writes)
+**Tradeoffs:** Slight upfront friction for the user; more reliable than inference for V1. Accepted in exchange for build simplicity and predictable behavior.
+
+---
+
+## 2026-06-16 — Model selection: Sonnet 4.6 for runtime API calls
+**Decision:** Use claude-sonnet-4-6 for the app's Claude API calls at runtime.
+**Why:** The check-in is conversational, instructional, and task-based — answering questions, tracking Baby Steps progress, giving feedback. Per the LLM API guide, Opus is warranted only when the core value depends on deep multi-step reasoning.
+**Alternatives considered:** Claude Opus (4.7/4.8)
+**Tradeoffs:** Sonnet is faster and cheaper; Opus would be stronger for complex synthesis but unnecessary for this use case.
+
+---
+
+## 2026-06-16 — Spike built into the Next.js app
+**Decision:** The Rung 2 spike lives in the Next.js app (app/api/checkin/route.ts + app/page.tsx) rather than as a standalone script.
+**Why:** The spike is a thin version of the actual product — same stack, same flow. Building it in the app means nothing gets thrown away; it's the starting point for the real build.
+**Alternatives considered:** Standalone Node.js script in docs/research/spike/
+**Tradeoffs:** Slightly more setup than a script, but produces a running UI that makes test case evaluation easier and doubles as the POC foundation.
+
+---
