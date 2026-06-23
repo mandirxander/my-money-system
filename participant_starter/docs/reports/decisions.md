@@ -67,3 +67,11 @@
 **Tradeoffs:** Slightly more setup than a script, but produces a running UI that makes test case evaluation easier and doubles as the POC foundation.
 
 ---
+
+## 2026-06-16 — V2 idea: AI-assisted CSV auto-fix with user confirmation
+**Decision:** Parked for V2 — when the check-in flags a malformed CSV (missing income rows, embedded calculated rows, bad dates, multi-period stacking), have the AI propose specific fixes and let the user review/confirm before proceeding, rather than just telling the user to fix and re-export manually.
+**Why:** Spike testing with a real personal CSV showed the validation logic correctly catches malformed data and refuses to give advice on it — but currently just punts the fix back to the user, adding friction at exactly the point the system is supposed to reduce it.
+**Alternatives considered:** None yet — V1 stays as reject-and-explain; auto-fix is a V2 enhancement.
+**Tradeoffs:** Auto-fixing risks misinterpreting ambiguous data (e.g., guessing which column is "Amount"); user confirmation step mitigates that risk but adds one more interaction.
+
+---

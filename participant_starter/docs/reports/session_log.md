@@ -113,3 +113,38 @@
 **Next session focus:** Get Sunday's key and finish the spike tests
 
 ---
+
+## Session 5 — 2026-06-23
+
+**Goal for this session:** Get a working API key and finish running the spike test cases
+
+**What we did:**
+- Resolved API key blocker — updated .env.local with working Anthropic key
+- Confirmed spike is live and functional (dev server running at localhost:3000)
+- Ran all 8 evaluation test cases against the spike and logged results in data/evaluations_data.csv
+- Tested with real personal Excel budget — system correctly blocked and identified all formatting issues
+- Created CSV_BASELINE_WELLFORMED.csv and confirmed the happy path delivers valid structured advice
+- Captured key finding: LLM non-determinism caused inconsistent validation behavior on CSV_FORMAT_CURRENCY_SYMBOLS (one run blocked, one gave advice)
+- Logged V2 decision: AI-assisted CSV auto-fix with user confirmation
+- Completed Session 2 homework reflection (all 3 questions) — saved to sessions/session_02/reflection.md
+
+**What we tried that didn't work:**
+- API key had to be copy-pasted carefully — hand-transcribing keys introduces character ambiguity (l vs I, _ vs __) that causes auth failures
+- A duplicate .gitignore was created in participant_starter/ in addition to the root — needs to be resolved
+
+**What we learned:**
+- You have to put bounds on how you want AI to talk to you — tone, verbiage, and response length need to be explicitly defined; the AI should emulate a specific character or voice you have in mind
+- The flow breaks when AI gives emotionally flat or overly long responses, especially to users already coming in overwhelmed
+- CSV parsing was the top quality risk and it proved more impactful than expected — bad data fed to the AI can push financial advice in a genuinely harmful direction
+- When data was real, output was good; when scenarios were AI-generated, edge cases broke more easily
+- The experience of reading what went wrong and manually fixing a CSV is too much friction — the AI should handle the fix with user approval (V2)
+
+**Blockers or open questions:**
+- Double .gitignore file in participant_starter/ — needs to be cleaned up
+- Supabase gap not yet addressed (server-side pattern not confirmed)
+- Vercel not yet connected
+- CLAUDE.md not yet updated with V2 CSV auto-fix instruction or Project Phase change
+
+**Next session focus:** Start Session 3 homework — fix the Supabase gap, resolve the double .gitignore, and begin implementation design workflow
+
+---

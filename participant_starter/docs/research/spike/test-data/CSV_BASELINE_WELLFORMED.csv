@@ -1,0 +1,8 @@
+Income,Bills,Due Date,Amount,Paid
+Salary,,,3200,Yes
+Side income,,,400,Yes
+,Rent,June 1,1800,Yes
+,Car payment,June 5,450,Yes
+,Utilities,June 10,180,Yes
+,Groceries,June 15,300,No
+,Credit card min,June 12,75,No
