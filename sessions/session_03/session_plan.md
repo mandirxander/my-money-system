@@ -49,18 +49,13 @@ Hands-on, live in Claude Code. Help anyone who's stuck.
    - Walk the group through pulling updated/new course files, and have everyone build (or run) their reusable course-sync skill.
    - **Confirm everyone succeeded** — no one should leave without the current Session 3 files.
    - *(Reminder: a newly created/edited skill won't appear until they start a new session or `/clear` — Claude Code only discovers skills at startup.)*
+   - Note: participants now sync at the **start of each class**, so after syncing they should have only the workflows through the current session — nothing to clean out manually.
 
-2. **Clean out the workflows you don't need yet (~5 min)**
-   - After syncing, participants should have **only the workflows through Session 3**. Delete everything past `implementation` — those get rewritten and re-released as their session arrives, so a stale copy now would only mislead you.
-   - **Keep:** `orientation`, `ideation`, `evaluation_dataset`, `user_research`, `implementation`
-   - **Delete:** `context_management`, `architecture`, `context_architecture`, `user_experience`, `evaluation_at_scale`, `first_deployment`, `demoing_your_agent`
-   - Simple rule: *delete every workflow file past `implementation`; you'll re-sync each one when its session comes up.*
-
-3. **How to use Claude for the next homework (~12 min)**
+2. **How to use Claude for the next homework (~12 min)**
    - **Light user research:** show how Claude can draft a behavioral conversation guide and synthesize findings — so research is fast (or skippable) rather than a chore. Set expectations: skip if you're building only for yourself, speed-run if you're already expert in the domain.
    - **Designing your build:** preview kicking off the `implementation` workflow — it turns your research + evaluation work into an interaction model, a data-flow map, a scoped first version, and build-ready specs (`poc_specs.md`). **No code yet** — this week is design.
 
-4. **Tooling Q&A — time-boxed, pick by group (~8 min)**
+3. **Tooling Q&A — time-boxed, pick by group (~8 min)**
    - `/init` vs. this project's file structure (why ours is planning-first; folders get added as you build)
    - git in the command line — how's it going? quick troubleshooting
    - `.gitignore` — ask Claude what file types you're missing for your project

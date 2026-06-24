@@ -119,7 +119,7 @@ For each main thing the system does:
 
 ### Step 3: Map the data flow
 
-**Goal:** Map how information moves through the system — concretely enough to scope and spec the POC. (The deep version — trimming LLM calls, schemas — comes later in the context_architecture workflow.)
+**Goal:** Map how information moves through the system — concretely enough to scope and spec the POC. (The deep version — trimming LLM calls, schemas — comes later in the agent_behavior_spec workflow.)
 
 ## Match their technical level
 
@@ -157,7 +157,7 @@ Propose a first-draft happy path from what you know, then have them correct it, 
 
 - "Where does the system pause for the user to decide, review, or approve?" (ties back to the agency/autonomy balance from Step 2)
 
-That's enough to scope and spec. You'll inventory and tighten the actual LLM calls and data flow in the later context_architecture workflow.
+That's enough to scope and spec. You'll inventory and tighten the actual LLM calls and data flow in the later agent_behavior_spec workflow.
 
 **Deliver:** Append to `docs/implementation_design.md` with sections:
 

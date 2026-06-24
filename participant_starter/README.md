@@ -34,7 +34,7 @@ your-project/
 ├── guides/                      ← Standing reference guides (llm_api_guide, workflow_cards, …)
 │
 ├── workflows/                   ← Course workflow guides — reference with @workflows/[name].md
-│   └── cards/                   ← Your own reusable workflow cards (Sessions 4–6)
+│   └── cards/                   ← Your own reusable workflow cards (Sessions 5–6)
 │
 └── src/                         ← Your source code — add this when you start building (Session 4+)
 ```
@@ -66,11 +66,10 @@ your-project/
 | S3 homework    | poc_specs.md                          | docs/specs/      |
 | S3 homework    | app shell (scaffolded, empty)         | src/             |
 | S4 homework    | built POC + first UI                  | src/             |
-| S4 homework    | first workflow card                   | workflows/cards/ |
-| S5 homework    | context_architecture_design.md        | docs/            |
+| S5 homework    | agent_behavior_design.md         | docs/            |
 | S5 homework    | user_experience_spec.md               | docs/specs/      |
 | S5 homework    | UI polish (applied to your interface) | src/             |
-| S5 homework    | workflow card                         | workflows/cards/ |
+| S5 homework    | first workflow card                   | workflows/cards/ |
 | S6 homework    | evaluating_for_scale_design.md        | docs/            |
 | S6 homework    | deployment_design.md                  | docs/            |
 | S6 homework    | deployment_specs.md                   | docs/specs/      |
