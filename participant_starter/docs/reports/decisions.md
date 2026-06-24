@@ -75,3 +75,35 @@
 **Tradeoffs:** Auto-fixing risks misinterpreting ambiguous data (e.g., guessing which column is "Amount"); user confirmation step mitigates that risk but adds one more interaction.
 
 ---
+
+## 2026-06-24 — Baby Step as the goal-setting mechanism
+**Decision:** The user's current Baby Step, set once at onboarding and saved to Supabase, determines the check-in focus automatically — no explicit goal entry required.
+**Why:** The Baby Step already encodes the goal (e.g. BS2 = debt paydown, BS3 = emergency fund). Asking the user to also state a goal is redundant and adds friction.
+**Alternatives considered:** Explicit goal entry at the start of each check-in
+**Tradeoffs:** System must know the Baby Step is accurate; user is responsible for updating it when they advance.
+
+---
+
+## 2026-06-24 — Piece-by-piece advice delivery (V1 only mode)
+**Decision:** Advice surfaces sequentially — budget status → debt progress → what to focus on — with no option to change delivery mode in V1.
+**Why:** Reduces cognitive load for a user who may already be emotionally overwhelmed when opening the app.
+**Alternatives considered:** All advice shown at once; output delivery as a saved user preference
+**Tradeoffs:** Less flexibility for users who prefer a full summary upfront. Delivery preference deferred to V2.
+
+---
+
+## 2026-06-24 — CSV validation uses rule-based code, not the LLM
+**Decision:** Budget CSV validation runs as deterministic server-side code. The LLM is only called after data is confirmed clean.
+**Why:** The spike exposed that LLM-based validation produces inconsistent results on identical input (non-determinism). Rule-based code eliminates that failure mode entirely.
+**Alternatives considered:** LLM-driven validation (tested in spike)
+**Tradeoffs:** Rule-based validation is less flexible for edge cases the rules don't anticipate, but determinism is non-negotiable for financial data.
+
+---
+
+## 2026-06-24 — Conversational debt input only in V1
+**Decision:** Debt figures are entered conversationally in V1 (natural language, e.g. "my car loan is $8,400"). CSV upload for debt deferred to V2.
+**Why:** Matches how the user already tracks debt today (phone notes). CSV export for debt adds friction without improving the V1 learning.
+**Alternatives considered:** Debt CSV upload as a parallel input path
+**Tradeoffs:** Conversational input requires reliable parsing and a follow-up prompt for incomplete entries. Accepted as the right V1 tradeoff.
+
+---

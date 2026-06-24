@@ -14,7 +14,7 @@ I'm a UX/UI designer with an Electrical and Computer Engineering background and 
 
 ## Project Phase
 
-Planning
+Building POC
 
 ## Key Files to Read
 - `docs/reports/participant_profile.md` — who I am and how I like to work
@@ -52,9 +52,44 @@ Planning
 - Assume — ask if something is unclear
 - Prescribe a financial philosophy — Mandi has her own (Dave Ramsey) and the system should reflect hers
 
+## Primary Quality Risk
+
+Any data input — CSV upload or conversational debt entry — may not be validated consistently, producing financial advice the user acts on. Two failure modes: bad CSV format slipping through, and LLM non-determinism on identical input.
+
+**What we're building first to test it:** Deterministic server-side CSV validation (rule-based code, not the LLM) + conversational debt input with structured output parsing. The LLM is only called after data is confirmed clean.
+
+## Interaction Model
+
+- Bi-weekly sit-down check-in triggered by user's own calendar reminder (no in-app reminders in V1)
+- Opens with the user's current Baby Step — no explicit goal-setting required; Baby Step defines the focus
+- Baby Step is set once at onboarding, saved to Supabase, and updated only when the user advances
+- Missing data: system asks before proceeding, never skips silently
+- Advice delivered piece by piece on screen: budget status → debt progress → what to focus on
+
+## Data Flow & Connection Decisions
+
+- **Budget data:** CSV upload from Excel → rule-based server-side validation → gate on failure
+- **Debt data:** Conversational text input → Claude API parses to structured JSON → saved to Supabase
+- **Claude API:** Generates check-in advice scoped to Baby Step; called only after clean data is confirmed
+- **Supabase:** Server-side client, `SUPABASE_SERVICE_ROLE_KEY` only — stores Baby Step + debt figures
+- **SendGrid:** Deferred to V2
+
+## Cut or Simplified for V1
+
+- No in-app reminders (email, calendar, text) — V2
+- No budget or debt history over time — V1 uses current figures only
+- No multi-user support or user accounts — testing with own data first
+- No output delivery preference (piece by piece is the only mode) — V2
+- No receipt photo upload — V2
+- No mobile app — V2
+
+## Beyond Class (Parked)
+
+SendGrid reminders, calendar/text notifications, receipt photo upload, mobile app, output delivery as saved user preference, multi-user support.
+
 ## Current Focus
 
-Session 1 — Setting up the workspace and writing my CLAUDE.md
+Building the POC — Session 4 onward. Full specs in `docs/specs/poc_specs.md`. Build order: onboarding (Baby Step) → CSV validation → conversational debt input → missing data gate → full check-in with piece-by-piece advice.
 
 ## Quality Standards
 

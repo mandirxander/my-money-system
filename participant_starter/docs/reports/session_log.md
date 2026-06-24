@@ -148,3 +148,34 @@
 **Next session focus:** Start Session 3 homework — fix the Supabase gap, resolve the double .gitignore, and begin implementation design workflow
 
 ---
+
+## Session 6 — 2026-06-24
+
+**Goal for this session:** Complete Session 3 homework — finish the implementation workflow (Parts 2–4) and verify the Supabase setup
+
+**What we did:**
+- Completed implementation workflow Steps 2–5:
+  - Step 2: Designed the interaction model (bi-weekly check-in, Baby Step drives focus, piece-by-piece advice, missing data gate)
+  - Step 3: Mapped the data flow (CSV upload + conversational debt input, Supabase for storage, Claude API for advice)
+  - Step 4: Scoped the POC (defined what to build first, applied the ruthless filter, wrote the definition of done)
+  - Step 5: Generated POC specs — saved to docs/specs/poc_specs.md
+- Updated docs/implementation_design.md with all workflow outputs
+- Updated CLAUDE.md — project phase changed to "Building POC", added quality risk, interaction model, data flow decisions, cut/simplified/parked features
+- Verified Supabase server-side pattern is correct (service_role key, no anon key in browser code)
+- Removed NEXT_PUBLIC_SUPABASE_ANON_KEY from .env.local
+- Confirmed double .gitignore issue from Session 5 was already resolved
+
+**What we tried that didn't work:**
+- Pausing and coming back mid-session didn't resume exactly where expected — need to wrap up after every session to preserve state cleanly
+
+**What we learned:**
+- Building a POC involves constantly revisiting and iterating on the original idea at much greater depth — there are more assumptions to surface and more decisions to make than planning suggests
+
+**Blockers or open questions:**
+- Vercel not yet connected
+- Supabase tables not yet created (user_profile, debt_figures)
+- Session 4 homework not yet started
+
+**Next session focus:** Session 4 homework
+
+---
