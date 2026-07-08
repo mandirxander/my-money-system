@@ -12,8 +12,8 @@ This week you **build the real thing**. In class you started your riskiest slice
 | Wrap up — Update `CLAUDE.md` + reflection                | 5–10 min  |
 
 
-> **🔄 Standing habit — restart your dev server each new Claude Code session.** Use the **`/restart-dev-server`** slash command you created in class every time you open a new Claude Code session (or run `/clear`) — the dev server doesn't carry over, and that command also catches a known snag where a leftover process from an earlier session stays bound to the dev port, making the page seem stale or the server fail to start. **Didn't get to it in class?** Create it now:
-> *"Two things: first, if my dev script in package.json uses Turbopack (the `--turbo` flag), switch it to webpack instead — slightly slower rebuilds, but reliable hot-reload, which fixes a whole class of 'I don't see my changes' issues. Second, create a slash command called `restart-dev-server` in `.claude/commands/` that starts my dev server with `npm run dev`. If port 3000 is already in use, or the page still doesn't reflect my latest changes after that, it should check for and kill any orphaned node/next-server processes still bound to that port — including leftover build workers — then start fresh."*
+> **🔄 Standing habit — restart your dev server each new Claude Code session.** Use the **`/restart-dev-server`** slash command you created in class every time you open a new Claude Code session (or run `/clear`) — the dev server doesn't carry over, and that command also fixes two known snags: on Windows + WSL, file-change notifications never reach the dev server (so your edits silently don't show up — the command starts the server in polling mode, which fixes it), and a leftover process from an earlier session can stay bound to the dev port. **Didn't get to it in class?** Create it now:
+> *"Three things: first, if my dev script in package.json uses Turbopack (the `--turbo` flag), switch it to webpack instead — the polling fix below needs it. Second, create a slash command called `restart-dev-server` in `.claude/commands/` that starts my dev server with `WATCHPACK_POLLING=true npm run dev` — keep that variable exactly; it makes the server poll for file changes, which is required because change notifications don't cross the Windows/WSL filesystem boundary. Third, before starting, the command should check for and kill any orphaned node/next-server processes still bound to port 3000 — including leftover build workers — then start fresh."*
 >
 > **Then start a new Claude Code session (or run `/clear`)** before trying it — Claude Code only discovers new slash commands at startup, so it won't show up in the session you created it in.
 
@@ -84,12 +84,12 @@ A couple of participants asked for more on the command line, git, and skills. Th
 
 ---
 
-## Reflection (post to Teams channel)
+## Reflection (bring to the Session 5 debrief)
 
-After completing the parts above, write a short reflection (a few sentences each):
+After completing the parts above, write a short reflection (a few sentences each) — you'll share it live at the start of Session 5, where a share-out prompt pulls it up from your session log:
 
 1. **How did building change your design?** What did you have to rethink once it was real code instead of a spec?
 2. **How did your riskiest slice actually perform?** Did the thing you were most worried about hold up?
 3. **What's still rough or unfinished?** What do you want to refine next?
 
-Post your reflection in the Teams channel before Session 5. (And ask Claude to save your reflection to your `session_log.md`!)
+Ask Claude to save your reflection to your `session_log.md` — that's where the Session 5 debrief share-out prompt will find it.

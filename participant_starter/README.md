@@ -26,8 +26,9 @@ your-project/
 │   │   ├── decisions.md             ← Why you made key choices — append-only log
 │   │   └── session_log.md           ← What you did and tried each session — running narrative
 │   ├── problem_definition.md    ← What you're solving and why (Session 2)
+│   ├── [your]_design.md         ← Design docs — implementation (S3), agent behavior + UX (S5), …
 │   ├── research/                ← Spike research (S2 homework) + user research notes (S3)
-│   └── specs/                   ← POC specs (S3), UX spec (S5), deployment specs (S6)
+│   └── specs/                   ← Implementation-ready specs: POC specs (S3), deployment specs (S6)
 │
 ├── prompts/                     ← Prompt templates you write and refine (Sessions 2–4)
 │
@@ -42,8 +43,7 @@ your-project/
 **Phase 2 folders (add when you need them):**
 
 - `src/` — add when you start the POC build (Session 4 homework)
-- `data/` — add when you need to mock or store structured data
-- `docs/eval/` — add for evaluation reports (Sessions 2–3 and 6)
+- `data/` — add when you need to mock or store structured data (e.g. `evaluations_data.csv`, S2)
 
 ---
 
@@ -66,18 +66,20 @@ your-project/
 | S3 homework    | poc_specs.md                          | docs/specs/      |
 | S3 homework    | app shell (scaffolded, empty)         | src/             |
 | S4 homework    | built POC + first UI                  | src/             |
-| S5 homework    | agent_behavior_design.md         | docs/            |
-| S5 homework    | user_experience_spec.md               | docs/specs/      |
-| S5 homework    | UI polish (applied to your interface) | src/             |
-| S5 homework    | first workflow card                   | workflows/cards/ |
+| S5 homework    | agent_behavior_design.md (incl. your scored test run) | docs/ |
+| S5 homework    | user_experience_design.md             | docs/            |
+| S5 homework    | design pass + ownership/AI-risk cues (applied) | src/    |
+| S5 homework    | UI Conventions section                | CLAUDE.md        |
+| S5 homework    | workflow cards — most of your toolbelt (Set the Context, Simplest Prototype, Prioritize by Risk, Behavior Design, Experience Design) | workflows/cards/ |
 | S6 homework    | evaluating_for_scale_design.md        | docs/            |
 | S6 homework    | deployment_design.md                  | docs/            |
 | S6 homework    | deployment_specs.md                   | docs/specs/      |
-| S6 homework    | workflow card                         | workflows/cards/ |
+| S6 homework    | deployed app (live URL, 5–10 testers) | Vercel           |
+| S6 homework    | final workflow cards — Evaluation and Improvement, Pilot With Users, Loops Audit (completes toolbelt) | workflows/cards/ |
 | S7 (optional)  | demo_plans.md                         | docs/            |
 
 
-*Most project work now happens in homework, driven by the workflows (~2 per week). "When" tracks the session whose homework first produces each artifact. Sessions 3–6 are being finalized to the new format, so a few rows may still shift.*
+*Most project work happens in homework, driven by the workflows (~2 per week). "When" tracks the session whose homework first produces each artifact.*
 
 ---
 

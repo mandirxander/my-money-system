@@ -26,9 +26,9 @@ Each participant should copy the `participant_starter/` template folder to their
 - [ ] Prepare live demo showing: Claude Code with no CLAUDE.md vs. with CLAUDE.md
 
 ## Reference Files (for facilitator)
-- `Planning/ai-mentor-circle-outline.md` — full course outline
-- `Planning/design-philosophy.md` — session framing and mental model shifts
-- `Planning/track-1-ai-as-collaborator.md` — session structure and full artifact list
+- `archive/Planning/ai-mentor-circle-outline.md` — full course outline
+- `archive/Planning/design-philosophy.md` — session framing and mental model shifts
+- `archive/Planning/track-1-ai-as-collaborator.md` — session structure and full artifact list
 
 ## Key URLs / Tools
 - Cursor download: [cursor.sh]
