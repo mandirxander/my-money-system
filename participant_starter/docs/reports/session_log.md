@@ -179,3 +179,33 @@
 **Next session focus:** Session 4 homework
 
 ---
+
+## Session 7 — 2026-07-08
+
+**Goal for this session:** Complete Session 4 homework — build the first version of the POC end to end.
+
+**What we did:**
+- Applied sage-garden theme from tweakcn.com via shadcn CLI; updated page.tsx to use theme tokens throughout
+- Created /restart-dev-server slash command in .claude/commands/
+- Created Supabase tables: user_profile and debt_figures
+- Built onboarding slice — Baby Step capture, saved to Supabase, loads on return visits with a "Change step" link
+- Built deterministic CSV validation slice — rule-based server-side code in lib/validateCsv.ts; Claude only called after data is confirmed clean
+- Built conversational debt input slice — natural language → Claude API parses to structured JSON via tool_use → saved to debt_figures table; returns clarification question if input is unclear
+- Built missing data gate — readiness checklist in UI, checkin route blocks if debt figures are absent
+- Built piece-by-piece advice delivery — checkin route returns structured JSON (budgetStatus, debtProgress, recommendedFocus); moved results to a dedicated /results page with sequential card reveal and "Continue →" navigation
+
+**What we tried that didn't work:**
+- Applying the sage-garden design system didn't work on the first attempt — the page was using hardcoded zinc-* Tailwind colors instead of theme tokens, so the theme had no visible effect. Required updating all color classes to semantic tokens (bg-background, text-foreground, etc.)
+
+**What we learned:**
+- Claude is a powerful coding tool — you can build anything with it if you have a clear objective, and it works fast.
+
+**Blockers or open questions:**
+- Vercel not yet connected
+- UI still rough — no data visualizations or graphs yet
+- No conversational input for the user to talk back to the system (one-way output only in V1)
+- Session 5 homework not yet started
+
+**Next session focus:** UI graphs and data visualizations, conversational input so users can talk to the system, and Session 5 homework.
+
+---

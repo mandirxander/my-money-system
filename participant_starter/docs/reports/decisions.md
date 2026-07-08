@@ -107,3 +107,27 @@
 **Tradeoffs:** Conversational input requires reliable parsing and a follow-up prompt for incomplete entries. Accepted as the right V1 tradeoff.
 
 ---
+
+## 2026-07-08 — Results delivered on a dedicated /results page
+**Decision:** Moved piece-by-piece advice delivery to its own /results page instead of rendering inline on the main page below the form.
+**Why:** Reduces scrolling and keeps the user focused on the advice — the main page stays focused on inputs, the results page stays focused on output.
+**Alternatives considered:** Inline display below the check-in form (built first, then replaced)
+**Tradeoffs:** Requires sessionStorage to pass data between pages; slight added complexity in exchange for a meaningfully cleaner experience.
+
+---
+
+## 2026-07-08 — Staying on Next.js 16 with Turbopack
+**Decision:** Kept Next.js 16 with Turbopack as the default bundler rather than downgrading to get webpack.
+**Why:** Next.js 16 doesn't support --no-turbopack as a flag or config option — there's no clean way to opt out. Turbopack is stable enough for the POC.
+**Alternatives considered:** Downgrading to Next.js 14 where webpack was the default
+**Tradeoffs:** Turbopack may have occasional hot-reload quirks; the /restart-dev-server command exists to recover from those.
+
+---
+
+## 2026-07-08 — CSV validation is deterministic rule-based code, not the LLM
+**Decision:** Replaced LLM-based CSV validation (in the system prompt) with rule-based server-side code in lib/validateCsv.ts. Claude is only called after the CSV is confirmed clean.
+**Why:** The spike proved LLM validation is non-deterministic — identical input produced different outcomes across runs. Rule-based code eliminates that failure mode entirely.
+**Alternatives considered:** LLM-driven validation (tested and rejected in spike)
+**Tradeoffs:** Rule-based validation is less flexible for edge cases the rules don't anticipate, but determinism is non-negotiable for financial data.
+
+---
