@@ -1,80 +1,41 @@
-interface ValidationResult {
+import { parseCsvLine } from './csv'
+
+export interface ValidationResult {
   valid: boolean
   error?: string
 }
 
 const CALCULATED_LABELS = ['total', 'remaining', 'subtotal', 'net income', 'net']
-const RECOGNIZED_HEADERS = ['amount', 'income', 'bills', 'due date', 'paid']
-
-function parseLine(line: string): string[] {
-  const result: string[] = []
-  let current = ''
-  let inQuotes = false
-
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i]
-    if (char === '"') {
-      inQuotes = !inQuotes
-    } else if (char === ',' && !inQuotes) {
-      result.push(current.trim())
-      current = ''
-    } else {
-      current += char
-    }
-  }
-  result.push(current.trim())
-  return result
-}
+const REQUIRED_HEADERS = ['income', 'bills', 'due date', 'amount', 'paid']
 
 function rowLooksLikeHeaders(cells: string[]): boolean {
-  return cells.some(cell => RECOGNIZED_HEADERS.includes(cell.toLowerCase()))
+  return cells.some(cell => REQUIRED_HEADERS.includes(cell.toLowerCase()))
 }
 
-export function validateCsv(csvText: string): ValidationResult {
-  const lines = csvText
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 0)
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, c => c.toUpperCase())
+}
 
-  if (lines.length < 2) {
-    return { valid: false, error: 'CSV is empty or has no data rows.' }
-  }
+/**
+ * Core budget validation rules, shared by CSV upload and typed mini-form entry
+ * so both input paths are held to the identical deterministic bar.
+ */
+export function validateRows(headers: string[], dataRows: string[][]): ValidationResult {
+  const lowerHeaders = headers.map(h => h.toLowerCase())
 
-  const firstRow = parseLine(lines[0])
-
-  // If first row isn't column headers, check if second row is
-  if (!rowLooksLikeHeaders(firstRow)) {
-    const secondRow = lines.length > 1 ? parseLine(lines[1]) : []
-    if (rowLooksLikeHeaders(secondRow)) {
-      return {
-        valid: false,
-        error:
-          'Your CSV has a pay period header row at the top (e.g. "June 1–15 2026"). Delete that row before uploading so the column headers are in row 1.',
-      }
-    }
+  const missingHeaders = REQUIRED_HEADERS.filter(h => !lowerHeaders.includes(h))
+  if (missingHeaders.length > 0) {
     return {
       valid: false,
-      error:
-        'Could not find column headers. Expected columns like: Income, Bills, Due Date, Amount, Paid.',
+      error: `Missing required column(s): ${missingHeaders.map(titleCase).join(', ')}.`,
     }
   }
 
-  const headers = firstRow.map(h => h.toLowerCase())
-  const amountIndex = headers.findIndex(h => h === 'amount')
+  const amountIndex = lowerHeaders.findIndex(h => h === 'amount')
 
-  if (amountIndex === -1) {
-    return {
-      valid: false,
-      error: 'Missing required column: Amount. Make sure your CSV includes an Amount column.',
-    }
-  }
-
-  // Scan data rows
   let emptyAmountCount = 0
 
-  for (let i = 1; i < lines.length; i++) {
-    const cells = parseLine(lines[i])
-
+  for (const cells of dataRows) {
     // A second header row means multiple pay periods were exported together
     if (rowLooksLikeHeaders(cells)) {
       return {
@@ -113,7 +74,7 @@ export function validateCsv(csvText: string): ValidationResult {
     }
   }
 
-  const dataRowCount = lines.length - 1
+  const dataRowCount = dataRows.length
   if (emptyAmountCount > 0 && emptyAmountCount >= dataRowCount / 2) {
     return {
       valid: false,
@@ -122,4 +83,37 @@ export function validateCsv(csvText: string): ValidationResult {
   }
 
   return { valid: true }
+}
+
+export function validateCsv(csvText: string): ValidationResult {
+  const lines = csvText
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 0)
+
+  if (lines.length < 2) {
+    return { valid: false, error: 'CSV is empty or has no data rows.' }
+  }
+
+  const firstRow = parseCsvLine(lines[0])
+
+  // If first row isn't column headers, check if second row is
+  if (!rowLooksLikeHeaders(firstRow)) {
+    const secondRow = lines.length > 1 ? parseCsvLine(lines[1]) : []
+    if (rowLooksLikeHeaders(secondRow)) {
+      return {
+        valid: false,
+        error:
+          'Your CSV has a pay period header row at the top (e.g. "June 1–15 2026"). Delete that row before uploading so the column headers are in row 1.',
+      }
+    }
+    return {
+      valid: false,
+      error:
+        'Could not find column headers. Expected columns like: Income, Bills, Due Date, Amount, Paid.',
+    }
+  }
+
+  const dataRows = lines.slice(1).map(parseCsvLine)
+  return validateRows(firstRow, dataRows)
 }

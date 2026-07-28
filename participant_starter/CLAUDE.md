@@ -68,11 +68,26 @@ Any data input — CSV upload or conversational debt entry — may not be valida
 
 ## Data Flow & Connection Decisions
 
-- **Budget data:** CSV upload from Excel → rule-based server-side validation → gate on failure
-- **Debt data:** Conversational text input → Claude API parses to structured JSON → saved to Supabase
-- **Claude API:** Generates check-in advice scoped to Baby Step; called only after clean data is confirmed
+- **Budget data:** CSV upload *or* typed mini-form → both run through the same rule-based server-side validation (`validateRows` in `lib/validateCsv.ts`) → gate on failure
+- **Debt data:** Conversational text input (Claude parses to structured JSON) *or* CSV upload (deterministic, `lib/validateDebtCsv.ts`) → both run through the same value sanity guardrail (`lib/validateDebt.ts`) → saved to Supabase
+- **Claude API:** Generates check-in advice scoped to Baby Step; called only after clean data is confirmed. Also parses conversational debt input — the one path still LLM-based, guarded by the value sanity check below.
 - **Supabase:** Server-side client, `SUPABASE_SERVICE_ROLE_KEY` only — stores Baby Step + debt figures
 - **SendGrid:** Deferred to V2
+
+## Guidelines (Session 5)
+
+- Every input, on every entry path (budget CSV, budget form, debt text, debt CSV), must pass its rule-based validation function before the LLM ever sees it — no path is allowed to skip a check another path enforces.
+- The LLM never validates data — it only acts on data already confirmed clean.
+- Ambiguous or incomplete input always produces a clarifying question, never a guess.
+- Baby Step is a stored fact from `user_profile` — the check-in prompt is told the Baby Step, never asked to infer it.
+- Advice tone: direct and warm, acknowledge emotional weight first when mood is stressed/crisis, 2–3 sentences per field max.
+
+## Guardrails (Session 5)
+
+- One LLM call per user action, no auto-retry — any failure (malformed tool output, API error) surfaces to the user immediately.
+- Debt amounts must be `> 0` and `≤ $2,000,000` (backstop against a garbled/misparsed value, not a real debt cap) — enforced in `validateDebtValues` for both the conversational and CSV debt paths before anything is saved.
+- Check-in returns a 422 and never runs if debt figures are missing on file.
+- Full reasoning in `docs/agent_behavior_design.md`.
 
 ## Cut or Simplified for V1
 

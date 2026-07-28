@@ -1,7 +1,15 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { validateCsv } from '@/lib/validateCsv'
+import { validateCsv, validateRows } from '@/lib/validateCsv'
 import { supabase } from '@/lib/supabase'
+
+interface BudgetFormRow {
+  type: 'income' | 'bill'
+  label: string
+  amount: string
+  dueDate: string
+  paid: boolean
+}
 
 const client = new Anthropic()
 
@@ -38,23 +46,51 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const csvFile = formData.get('csv') as File | null
+    const budgetRowsRaw = formData.get('budgetRows') as string | null
     const mood = formData.get('mood') as string
     const babyStep = formData.get('babyStep') as string
 
-    if (!csvFile) {
-      return Response.json({ error: 'No CSV file provided.' }, { status: 400 })
-    }
+    // Both entry modes are rule-based and deterministic — the LLM is only
+    // called after data is confirmed clean, regardless of how it arrived.
+    let csvText: string
 
-    const csvText = await csvFile.text()
+    if (csvFile) {
+      csvText = await csvFile.text()
 
-    if (!csvText.trim()) {
-      return Response.json({ error: 'The CSV file is empty.' }, { status: 400 })
-    }
+      if (!csvText.trim()) {
+        return Response.json({ error: 'The CSV file is empty.' }, { status: 400 })
+      }
 
-    // Rule-based validation — deterministic, never calls Claude
-    const validation = validateCsv(csvText)
-    if (!validation.valid) {
-      return Response.json({ error: validation.error }, { status: 422 })
+      const validation = validateCsv(csvText)
+      if (!validation.valid) {
+        return Response.json({ error: validation.error }, { status: 422 })
+      }
+    } else if (budgetRowsRaw) {
+      const rows: BudgetFormRow[] = JSON.parse(budgetRowsRaw)
+
+      if (rows.length === 0) {
+        return Response.json({ error: 'No budget rows provided.' }, { status: 400 })
+      }
+
+      const headers = ['Income', 'Bills', 'Due Date', 'Amount', 'Paid']
+      const dataRows = rows.map(r => [
+        r.type === 'income' ? r.label : '',
+        r.type === 'bill' ? r.label : '',
+        r.dueDate,
+        r.amount,
+        r.paid ? 'Yes' : 'No',
+      ])
+
+      const validation = validateRows(headers, dataRows)
+      if (!validation.valid) {
+        return Response.json({ error: validation.error }, { status: 422 })
+      }
+
+      // Re-serialize to the same CSV shape so everything downstream (Claude
+      // prompt, preview) is identical regardless of which input path was used.
+      csvText = [headers.join(','), ...dataRows.map(r => r.join(','))].join('\n')
+    } else {
+      return Response.json({ error: 'No budget data provided.' }, { status: 400 })
     }
 
     // Load saved debt figures — gate if missing
@@ -72,6 +108,17 @@ export async function POST(request: NextRequest) {
 
     const debtSummary = debtRows.map(d => `${d.label}: $${d.amount.toLocaleString()}`).join('\n')
 
+    // Investments/assets are optional — omit the section entirely if none are on file
+    const { data: investmentRows } = await supabase
+      .from('investment_figures')
+      .select('label, amount')
+      .order('updated_at', { ascending: true })
+
+    const investmentSummary =
+      investmentRows && investmentRows.length > 0
+        ? investmentRows.map(inv => `${inv.label}: $${inv.amount.toLocaleString()}`).join('\n')
+        : null
+
     const csvPreview = csvText.split('\n').slice(0, 5).join('\n')
 
     const userMessage = `Mood coming into this check-in: ${mood}
@@ -79,7 +126,7 @@ Current Baby Step: ${babyStep}
 
 Current debt figures:
 ${debtSummary}
-
+${investmentSummary ? `\nCurrent investments/assets:\n${investmentSummary}\n` : ''}
 Budget CSV:
 ${csvText}`
 
