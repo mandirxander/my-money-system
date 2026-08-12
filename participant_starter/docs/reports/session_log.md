@@ -300,3 +300,34 @@
 **Next session focus:** Complete the last (pulled-in) session's homework.
 
 ---
+
+## Session 11 — 2026-08-12
+
+**Goal for this session:** Complete Session 6 homework — evaluating_for_scale and first_deployment workflows, then deploy to Vercel.
+
+**What we did:**
+- Completed evaluating_for_scale Steps 1–2: revisited the quality bar (risk shifted from CSV validation, now closed by construction, to check-in advice generation), confirmed the Session 5 miss (missing Paid column) is fixed, found and fixed a live reliability bug (tool_choice: auto letting Claude skip the structured-output tool ~60% of the time on "good" mood), ran an AI-judge check against 5 real outputs with full agreement against manual scoring, surfaced a mood-acknowledgment consistency gap on identical input
+- Started first_deployment: Step 1 (testing reality check, deployment purpose), Step 4 (Vercel/Supabase/env-var mapping, cost check)
+- Found and closed a blocking gap: the app had zero data separation between users — deploying to 4-5 real households as planned would have had each overwrite the last. Built minimal per-household data isolation (household_key column on all 6 tables, x-household-key header on every route, household setup screen), verified live with two households running concurrently with zero data bleed
+- Wired the closed-loop feedback mechanism from scratch (it never existed): checkin_feedback table, /api/feedback route, thumbs up/down widget on the results page, verified live
+- Completed Step 3 (manual dependencies, independence requirements) and wrote docs/specs/deployment_specs.md, the final implementation-ready deployment spec
+- Connected the GitHub repo to Vercel and attempted the actual deploy
+- First build failed on a missing Supabase env var; fixed by adding the three required environment variables in Vercel's dashboard
+- Second build succeeded but served a 404 on every route despite "Ready" status; traced to next@16.2.7 sitting on a branch shipping canary builds today, likely a build-output compatibility gap with Next.js 16's new Adapters system; pinned to 16.3.0 stable and verified a clean local build + working production server, pushed to trigger a redeploy
+- Deploy still 404s after the version pin — unresolved at end of session
+
+**What we tried that didn't work:**
+- Tried to deploy the app and kept hitting errors; even with Claude's help there's a blocker neither of us could fully see from the logs alone — a real reminder of where human intervention (direct access to the Vercel dashboard, real-time clicking around) matters and a chat-only debugging loop has limits
+
+**What we learned:**
+- Need to give deployment more dedicated time and do it thoroughly rather than rushing — going back through the actual class sessions and handouts on deployment rather than improvising through errors
+
+**Blockers or open questions:**
+- Vercel deploy still returns a 404 on every route even after pinning Next.js to 16.3.0 — root cause not yet confirmed fixed, this is the top blocker
+- Tester commitments for first_deployment Step 2 still not locked — "I will ask," not confirmed yeses
+- Session 5 homework (Part 3: CLAUDE.md retrospective + final toolbelt cards) not yet started
+- evaluating_for_scale Step 3 (the 100x reflection) still bookmarked, not completed
+
+**Next session focus:** Finish Session 5 and 6 homework properly, working through deployment thoroughly using the actual course materials rather than shortcuts, to get the app genuinely live.
+
+---

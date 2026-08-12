@@ -243,3 +243,11 @@
 **Tradeoffs:** No UI exists yet for the builder to *view* aggregated feedback — for a 4-5 household pilot, reading the table directly in Supabase is enough; a dashboard would be premature.
 
 ---
+
+## 2026-08-12 — Pinned Next.js to 16.3.0 to try to fix a Vercel deploy 404 (unconfirmed)
+**Decision:** Bumped `next` from 16.2.7 to 16.3.0 stable (and matching `eslint-config-next`), after the first successful Vercel build served a 404 on every route despite "Ready" status.
+**Why:** 16.2.7 sat on a branch actively shipping canary builds the same day (16.3.1-canary.14 published hours earlier) — a plausible build-output compatibility gap with Next.js 16's new Adapters system, which changes how platforms like Vercel consume the build. Verified locally: clean build with a proper route table, and `npm start` serving both `/` and `/results` with 200.
+**Alternatives considered:** Downgrading to Next.js 15 (reverses the Session 7 "staying on Next 16" decision, held as a bigger fallback); pausing to file a Vercel/Next.js support request instead of guessing.
+**Tradeoffs/status:** **Unconfirmed** — pushed to trigger a redeploy, but the 404 was still occurring as of end of session. Root cause not verified; may need further investigation next session rather than assuming this fix worked.
+
+---
