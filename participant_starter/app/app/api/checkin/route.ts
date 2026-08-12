@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { supabase } from '@/lib/supabase'
+import { getHouseholdKey, householdKeyMissingResponse } from '@/lib/household'
 
 const client = new Anthropic()
 
@@ -37,12 +38,16 @@ const CHECKIN_TOOL: Anthropic.Tool = {
 
 export async function POST(request: NextRequest) {
   try {
+    const householdKey = getHouseholdKey(request)
+    if (!householdKey) return householdKeyMissingResponse()
+
     const { mood, babyStep } = await request.json()
 
     // Load saved debt figures — gate if missing
     const { data: debtRows } = await supabase
       .from('debt_figures')
       .select('label, amount')
+      .eq('household_key', householdKey)
       .order('updated_at', { ascending: true })
 
     if (!debtRows || debtRows.length === 0) {
@@ -58,6 +63,7 @@ export async function POST(request: NextRequest) {
     const { data: investmentRows } = await supabase
       .from('investment_figures')
       .select('label, amount')
+      .eq('household_key', householdKey)
       .order('updated_at', { ascending: true })
 
     const investmentSummary =
@@ -71,6 +77,7 @@ export async function POST(request: NextRequest) {
     const { data: budgetRows } = await supabase
       .from('budget_figures')
       .select('type, label, planned_amount, actual_amount, due_date, paid')
+      .eq('household_key', householdKey)
       .order('updated_at', { ascending: true })
 
     if (!budgetRows || budgetRows.length === 0) {
@@ -98,6 +105,7 @@ export async function POST(request: NextRequest) {
     const { data: previousSnapshot } = await supabase
       .from('checkin_snapshots')
       .select('baby_step, total_debt, total_investments, budget_income, budget_bills, created_at')
+      .eq('household_key', householdKey)
       .order('created_at', { ascending: false })
       .limit(1)
       .maybeSingle()
@@ -137,6 +145,7 @@ ${budgetSummary}`
       total_investments: totalInvestments,
       budget_income: budgetIncome,
       budget_bills: budgetBills,
+      household_key: householdKey,
     })
     if (snapshotError) console.error('Snapshot save error:', snapshotError)
 

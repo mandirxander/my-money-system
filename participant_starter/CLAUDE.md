@@ -72,6 +72,7 @@ Any data input — CSV upload or conversational debt entry — may not be valida
 - **Debt data:** Conversational text input (Claude parses to structured JSON) *or* CSV upload (deterministic, `lib/validateDebtCsv.ts`) → both run through the same value sanity guardrail (`lib/validateDebt.ts`) → saved to Supabase
 - **Claude API:** Generates check-in advice scoped to Baby Step; called only after clean data is confirmed. Also parses conversational debt input — the one path still LLM-based, guarded by the value sanity check below.
 - **Supabase:** Server-side client, `SUPABASE_SERVICE_ROLE_KEY` only — stores Baby Step + debt figures
+- **Household isolation (added 2026-08-12):** every table carries a `household_key` column; every API route requires an `x-household-key` header (`lib/household.ts` server-side, `lib/householdClient.ts` client-side) and scopes all reads/writes to it. Not real auth — a plain-text label the tester picks once, stored in `localStorage`. Any new table or route touching per-user data must follow this same pattern.
 - **History:** `checkin_snapshots` table (Baby Step, total debt, total investments, budget totals, timestamp) — one append-only row written per completed check-in, used for trend charts and gamified "win" states. Separate from the current-figures tables, which stay editable in place.
 - **SendGrid:** Deferred to V2
 
@@ -93,7 +94,7 @@ Any data input — CSV upload or conversational debt entry — may not be valida
 ## Cut or Simplified for V1
 
 - No in-app reminders (email, calendar, text) — V2
-- No multi-user support or user accounts — testing with own data first
+- No real authentication — reversed 2026-08-12 for the pilot deployment: minimal per-household data isolation via a plain-text household key (not real auth), enough to keep 4–5 trusted-family testers' data apart. Real accounts/login still not built.
 - No output delivery preference (piece by piece is the only mode) — V2
 - No receipt photo upload — V2
 - No mobile app — V2

@@ -2,15 +2,20 @@ import { NextRequest } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { validateLineItemValues, type LineItem } from '@/lib/validateLineItems'
 import { validateLineItemsCsv } from '@/lib/validateLineItemsCsv'
+import { getHouseholdKey, householdKeyMissingResponse } from '@/lib/household'
 
 // Investments/assets can plausibly run higher than a single debt figure
 // (retirement accounts, home equity) — same guardrail, wider backstop.
 const MAX_INVESTMENT = 10_000_000
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const householdKey = getHouseholdKey(request)
+  if (!householdKey) return householdKeyMissingResponse()
+
   const { data, error } = await supabase
     .from('investment_figures')
     .select('id, label, amount')
+    .eq('household_key', householdKey)
     .order('updated_at', { ascending: true })
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
@@ -18,6 +23,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const householdKey = getHouseholdKey(request)
+  if (!householdKey) return householdKeyMissingResponse()
+
   const contentType = request.headers.get('content-type') || ''
   let investments: LineItem[]
 
@@ -53,12 +61,13 @@ export async function POST(request: NextRequest) {
     investments = items
   }
 
-  // Clear existing investment figures and save the new ones
-  await supabase.from('investment_figures').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // Clear this household's existing investment figures and save the new ones
+  await supabase.from('investment_figures').delete().eq('household_key', householdKey)
 
   const rows = investments.map(inv => ({
     label: inv.label,
     amount: inv.amount,
+    household_key: householdKey,
     updated_at: new Date().toISOString(),
   }))
 

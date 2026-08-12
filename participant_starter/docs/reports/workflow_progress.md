@@ -13,5 +13,5 @@ Claude updates this file automatically after each step confirm. Check here to re
 | implementation | complete | Step 5 — POC specs generated, poc_specs.md created |
 | context_management | not started | — |
 | architecture | not started | — |
-| first_deployment | in progress | Step 1 complete — testing reality check + deployment purpose saved; Steps 2–5 (tester commitments, manual scope, stack mapping, deployment specs) not started |
+| first_deployment | in progress | Steps 1, 3, 4 complete; Step 2 partial — feedback wiring closed (checkin_feedback table + thumbs up/down live, return-loop question planted), tester commitments still open ("I will ask", not locked); Step 5 (deployment_specs.md) drafted and saved, deploy-ready except 3 checklist items that require an actual deploy (env vars in Vercel, remote/device access test) and locked tester commitments |
 | demoing_your_agent | not started | — |

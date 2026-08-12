@@ -2,13 +2,18 @@ import { NextRequest } from 'next/server'
 import { supabase } from '@/lib/supabase'
 import { validateLineItemValues, type LineItem } from '@/lib/validateLineItems'
 import { validateLineItemsCsv } from '@/lib/validateLineItemsCsv'
+import { getHouseholdKey, householdKeyMissingResponse } from '@/lib/household'
 
 const MAX_DEBT = 2_000_000
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const householdKey = getHouseholdKey(request)
+  if (!householdKey) return householdKeyMissingResponse()
+
   const { data, error } = await supabase
     .from('debt_figures')
     .select('id, label, amount')
+    .eq('household_key', householdKey)
     .order('updated_at', { ascending: true })
 
   if (error) return Response.json({ error: error.message }, { status: 500 })
@@ -16,6 +21,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const householdKey = getHouseholdKey(request)
+  if (!householdKey) return householdKeyMissingResponse()
+
   const contentType = request.headers.get('content-type') || ''
   let debts: LineItem[]
 
@@ -51,12 +59,13 @@ export async function POST(request: NextRequest) {
     debts = items
   }
 
-  // Clear existing debt figures and save the new ones
-  await supabase.from('debt_figures').delete().neq('id', '00000000-0000-0000-0000-000000000000')
+  // Clear this household's existing debt figures and save the new ones
+  await supabase.from('debt_figures').delete().eq('household_key', householdKey)
 
   const rows = debts.map(d => ({
     label: d.label,
     amount: d.amount,
+    household_key: householdKey,
     updated_at: new Date().toISOString(),
   }))
 

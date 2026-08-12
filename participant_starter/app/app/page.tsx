@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BABY_STEPS } from '@/lib/babySteps'
 import { BabyStepLadder } from '@/components/BabyStepLadder'
+import { getStoredHouseholdKey, setStoredHouseholdKey, clearStoredHouseholdKey, householdHeaders } from '@/lib/householdClient'
 
 interface BudgetFormRow {
   type: 'income' | 'bill'
@@ -137,6 +138,13 @@ function LineItemRowsEditor({
 }
 
 export default function Home() {
+  // Household key — minimal per-tester data isolation for the pilot.
+  // Not real auth; see lib/household.ts. Null until set up or loaded from
+  // localStorage, at which point the rest of the app can load.
+  const [household, setHousehold] = useState<string | null>(null)
+  const [householdInput, setHouseholdInput] = useState('')
+  const [householdChecked, setHouseholdChecked] = useState(false)
+
   // Onboarding state
   const [profileLoaded, setProfileLoaded] = useState(false)
   const [onboarding, setOnboarding] = useState(false)
@@ -177,14 +185,24 @@ export default function Home() {
   const [budgetCsv, setBudgetCsv] = useState<File | null>(null)
   const [budgetCsvConfirming, setBudgetCsvConfirming] = useState(false)
 
-  // On mount, load profile and existing figures
+  // On mount, check for a stored household key before loading anything
   useEffect(() => {
-    async function loadData() {
+    const stored = getStoredHouseholdKey()
+    if (stored) setHousehold(stored)
+    setHouseholdChecked(true)
+  }, [])
+
+  // Once a household key is known, load profile and existing figures
+  useEffect(() => {
+    if (!household) return
+
+    async function loadData(key: string) {
+      const headers = householdHeaders(key)
       const [profileRes, debtRes, investmentsRes, budgetRes] = await Promise.all([
-        fetch('/api/profile'),
-        fetch('/api/debt'),
-        fetch('/api/investments'),
-        fetch('/api/budget'),
+        fetch('/api/profile', { headers }),
+        fetch('/api/debt', { headers }),
+        fetch('/api/investments', { headers }),
+        fetch('/api/budget', { headers }),
       ])
       const profileData = await profileRes.json()
       const debtData = await debtRes.json()
@@ -216,16 +234,33 @@ export default function Home() {
       setProfileLoaded(true)
     }
 
-    loadData()
-  }, [])
+    loadData(household)
+  }, [household])
+
+  function handleHouseholdSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const trimmed = householdInput.trim()
+    if (!trimmed) return
+    setStoredHouseholdKey(trimmed)
+    setHousehold(trimmed)
+  }
+
+  function switchHousehold() {
+    clearStoredHouseholdKey()
+    setHousehold(null)
+    setHouseholdInput('')
+    setProfileLoaded(false)
+    setOnboarding(false)
+  }
 
   async function handleOnboardingSave() {
+    if (!household) return
     setOnboardingSaving(true)
     setOnboardingError('')
 
     const res = await fetch('/api/profile', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
       body: JSON.stringify({ babyStep: onboardingStep }),
     })
     const data = await res.json()
@@ -248,12 +283,13 @@ export default function Home() {
   }
 
   async function handleDebtSubmit() {
+    if (!household) return
     setDebtSaving(true)
     setDebtError('')
 
     const res = await fetch('/api/debt', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
       body: JSON.stringify({ items: toItems(debtRows) }),
     })
     const data = await res.json()
@@ -269,14 +305,14 @@ export default function Home() {
   }
 
   async function handleDebtCsvSubmit() {
-    if (!debtCsv) return
+    if (!debtCsv || !household) return
     setDebtSaving(true)
     setDebtError('')
 
     const formData = new FormData()
     formData.append('csv', debtCsv)
 
-    const res = await fetch('/api/debt', { method: 'POST', body: formData })
+    const res = await fetch('/api/debt', { method: 'POST', headers: householdHeaders(household), body: formData })
     const data = await res.json()
     setDebtSaving(false)
 
@@ -291,12 +327,13 @@ export default function Home() {
   }
 
   async function handleInvestmentSubmit() {
+    if (!household) return
     setInvestmentSaving(true)
     setInvestmentError('')
 
     const res = await fetch('/api/investments', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
       body: JSON.stringify({ items: toItems(investmentRows) }),
     })
     const data = await res.json()
@@ -312,14 +349,14 @@ export default function Home() {
   }
 
   async function handleInvestmentCsvSubmit() {
-    if (!investmentCsv) return
+    if (!investmentCsv || !household) return
     setInvestmentSaving(true)
     setInvestmentError('')
 
     const formData = new FormData()
     formData.append('csv', investmentCsv)
 
-    const res = await fetch('/api/investments', { method: 'POST', body: formData })
+    const res = await fetch('/api/investments', { method: 'POST', headers: householdHeaders(household), body: formData })
     const data = await res.json()
     setInvestmentSaving(false)
 
@@ -359,12 +396,13 @@ export default function Home() {
   }
 
   async function handleBudgetSubmit() {
+    if (!household) return
     setBudgetSaving(true)
     setBudgetError('')
 
     const res = await fetch('/api/budget', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
       body: JSON.stringify({ items: toBudgetItems() }),
     })
     const data = await res.json()
@@ -380,7 +418,7 @@ export default function Home() {
   }
 
   async function submitBudgetCsv(confirmReplace: boolean) {
-    if (!budgetCsv) return
+    if (!budgetCsv || !household) return
     setBudgetSaving(true)
     setBudgetError('')
 
@@ -388,7 +426,7 @@ export default function Home() {
     formData.append('csv', budgetCsv)
     if (confirmReplace) formData.append('confirmReplace', 'true')
 
-    const res = await fetch('/api/budget', { method: 'POST', body: formData })
+    const res = await fetch('/api/budget', { method: 'POST', headers: householdHeaders(household), body: formData })
     const data = await res.json()
     setBudgetSaving(false)
 
@@ -423,13 +461,14 @@ export default function Home() {
   }
 
   async function runCheckin() {
+    if (!household) return
     setLoading(true)
     setError('')
 
     try {
       const res = await fetch('/api/checkin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
         body: JSON.stringify({ mood, babyStep }),
       })
       const data = await res.json()
@@ -455,6 +494,53 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // Household setup — the first gate, before anything else loads. Not real
+  // auth: just a name/code each tester picks once so households' data stays
+  // apart. See lib/household.ts.
+  if (!householdChecked) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      </div>
+    )
+  }
+
+  if (!household) {
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-foreground mb-1">My Money System</h1>
+          <p className="text-muted-foreground text-sm mb-10">Let's get you set up.</p>
+
+          <div className="bg-card border border-border rounded-xl p-6">
+            <h2 className="mb-1">What's your household name?</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Pick something only your household will use (e.g. a first name or nickname) — this keeps your figures separate from anyone else testing the app. Not a password; just a label.
+            </p>
+
+            <form onSubmit={handleHouseholdSubmit} className="space-y-4">
+              <input
+                type="text"
+                placeholder="e.g. Mandi, Smith Family"
+                value={householdInput}
+                onChange={e => setHouseholdInput(e.target.value)}
+                className="w-full border border-border rounded-lg px-3 py-2 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                autoFocus
+              />
+              <button
+                type="submit"
+                disabled={!householdInput.trim()}
+                className="w-full bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+              >
+                Continue
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Loading state while profile check runs
@@ -621,7 +707,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-foreground mb-1">My Money System</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-foreground">My Money System</h1>
+          <button
+            onClick={switchHousehold}
+            className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
+          >
+            Switch household ({household})
+          </button>
+        </div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-muted-foreground text-sm">{currentStep?.label}</p>
           <button

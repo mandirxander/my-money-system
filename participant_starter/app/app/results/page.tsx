@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { BabyStepLadder } from '@/components/BabyStepLadder'
 import { BreakdownBarChart, BudgetMeter, SnapshotDelta, WinBanner } from '@/components/SnapshotCharts'
+import { getStoredHouseholdKey, householdHeaders } from '@/lib/householdClient'
 
 interface LineItem {
   label: string
@@ -40,6 +41,56 @@ function StepNav({ onBack, onContinue }: { onBack?: () => void; onContinue?: () 
           Continue →
         </button>
       )}
+    </div>
+  )
+}
+
+function FeedbackWidget() {
+  const [reaction, setReaction] = useState<'helpful' | 'not_helpful' | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
+
+  async function send(value: 'helpful' | 'not_helpful') {
+    const household = getStoredHouseholdKey()
+    if (!household || submitting || submitted) return
+    setReaction(value)
+    setSubmitting(true)
+    await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...householdHeaders(household) },
+      body: JSON.stringify({ reaction: value }),
+    })
+    setSubmitting(false)
+    setSubmitted(true)
+  }
+
+  if (submitted) {
+    return <p className="text-sm text-muted-foreground">Thanks — that helps.</p>
+  }
+
+  return (
+    <div className="flex items-center gap-3">
+      <p className="text-sm text-foreground">Was this check-in helpful?</p>
+      <button
+        type="button"
+        onClick={() => send('helpful')}
+        disabled={submitting}
+        className={`text-sm px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-40 ${
+          reaction === 'helpful' ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        👍 Yes
+      </button>
+      <button
+        type="button"
+        onClick={() => send('not_helpful')}
+        disabled={submitting}
+        className={`text-sm px-3 py-1.5 rounded-lg border transition-colors disabled:opacity-40 ${
+          reaction === 'not_helpful' ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground hover:text-foreground'
+        }`}
+      >
+        👎 Not really
+      </button>
     </div>
   )
 }
@@ -136,7 +187,13 @@ export default function Results() {
           </div>
         )}
 
-        {/* Done — nav back */}
+        {/* Done — feedback + nav back */}
+        {visibleStep >= 3 && (
+          <div className="bg-card border border-border rounded-xl p-4 mt-2">
+            <FeedbackWidget />
+          </div>
+        )}
+
         {visibleStep >= 3 && (
           <div className="pt-4">
             <button

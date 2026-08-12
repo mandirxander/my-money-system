@@ -227,3 +227,19 @@
 **Tradeoffs:** None identified — there was never a legitimate case where a plain-text reply instead of the structured tool call was the right outcome for this call, so forcing it has no downside found so far.
 
 ---
+
+## 2026-08-12 — Minimal per-household data isolation, reversing the single-user V1 cut
+**Decision:** Reverses the earlier V1 cut ("No multi-user support or user accounts — testing with own data first"). Added a `household_key` column to all 5 Supabase tables (`user_profile`, `debt_figures`, `investment_figures`, `budget_figures`, `checkin_snapshots`) and every API route now requires and scopes to an `x-household-key` header. On first visit, the app prompts for a household name (plain text, no password), stores it in `localStorage`, and sends it on every request; a "Switch household" link on the main screen lets a tester swap households on the same device. This is explicitly **not real auth** — nothing verifies identity, so anyone who knows or guesses another household's key could read/write that household's data.
+**Why:** Surfaced mid–`first_deployment` Step 2 — the plan is to deploy to 4–5 real households (family), each entering their own real financial figures. The app had zero data separation: every table was a single shared dataset, so a second household's data would have overwritten the first's outright. Deploying as-is would have made the pilot unusable on the first day.
+**Alternatives considered:** Real authentication (magic-link or password) — rejected as over-engineering for a 4–5 household trusted-family pilot, exactly the kind of automation `first_deployment` Step 3 says to push back on; narrowing the pilot to demo-only (testers view the builder's data rather than entering their own) — rejected because it waters down what testers actually learn about their own situation, which was the explicit point of asking them to enter real numbers.
+**Tradeoffs:** A household key is not a secret — this only works because the pilot testers are trusted family, not the general public. Documented as a known limitation for `deployment_specs.md`. Existing data was backfilled to a single `mandi` household key via a manual SQL migration (`ALTER TABLE ... ADD COLUMN` + backfill + `SET NOT NULL`, run directly in the Supabase SQL editor — no migration file tracked in the repo, consistent with how prior tables were created).
+
+---
+
+## 2026-08-12 — Wired the closed-loop feedback mechanism, first real capture path
+**Decision:** Added a `checkin_feedback` table (`household_key`, `reaction`: `helpful`/`not_helpful`, optional `comment`, `created_at`) and a new `/api/feedback` route, scoped by household key like every other route. A thumbs up/down widget ("Was this check-in helpful?") appears on the results page once all three advice cards are revealed, writing one row per reaction.
+**Why:** `first_deployment` Step 2 requires wiring the closed-loop feedback mechanism before testers arrive — checked the code and found no feedback capture existed anywhere, despite closed-loop feedback being one of the four original project requirements (`problem_definition.md`). Deploying without it would mean tester reactions to the advice go nowhere, and this project's core "return loop" argument depends on knowing whether the advice actually lands.
+**Alternatives considered:** A richer feedback form (star rating, category tags) — rejected as more than a pilot needs; routing feedback to a Slack/email notification instead of a table — rejected as unnecessary complexity when the builder can just query the table directly during the test window.
+**Tradeoffs:** No UI exists yet for the builder to *view* aggregated feedback — for a 4-5 household pilot, reading the table directly in Supabase is enough; a dashboard would be premature.
+
+---
