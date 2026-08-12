@@ -28,7 +28,7 @@ export function BabyStepLadder({ currentStep }: { currentStep: string }) {
                     isCurrent ? 'text-foreground font-medium' : 'text-muted-foreground'
                   }`}
                 >
-                  BS{step.value}
+                  {step.short}
                 </span>
               </div>
               {i < BABY_STEPS.length - 1 && (

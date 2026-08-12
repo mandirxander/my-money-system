@@ -118,3 +118,19 @@ Still open, to resume next session:
 - UI cue for the Step 3 overconfidence gap (no visible "AI-generated, verify the numbers" signal anywhere on the results screen yet — this is the one real gap identified).
 - Cross-screen consistency check (onboarding / main check-in / review / results).
 - Record UI Conventions section in `CLAUDE.md`.
+
+---
+
+## Step 4, Part B — ui_visibility (2026-08-12)
+
+**Visual reference pass — in progress, blocked on palette source.** A reference screenshot (three insights/celebration screens from another app) was reviewed. Direction confirmed: apply the reference's bold, high-contrast palette to the main check-in screen, keeping the existing interaction design and copy as-is — a palette change, not a flow change. Actual color values are deferred until a design system currently being built in Claude Design is ready to export from, rather than approximating hex values from the screenshot now. See decisions.md, 2026-08-12, "Reversing sage-garden for a bold, high-contrast palette." Structure/layout borrowing from the reference is unblocked and can proceed; final color application waits on the export.
+
+**AI-risk UI cue — tried, reverted.** Added a small "AI-generated" pill (with a hover tooltip pointing back at the real figures) next to the three advice labels on the results screen (Budget status, Debt progress, What to focus on), addressing the Step 3 overconfidence gap. After seeing it live, preferred the plain report text without the visual cue and reverted it. **This leaves the Step 3 overconfidence gap open with no UI mitigation** — noted here so it isn't lost; revisit if a different, less visually intrusive treatment comes to mind (e.g. folded into the review-screen confirmation instead of the results screen).
+
+**Cross-screen consistency check — done.** Reviewed all four screens (onboarding, review, check-in form, results) against theme tokens, typography ramp, card/button styles, and section-label style — colors, cards, and buttons were already consistent. Two real gaps found and fixed:
+- Results screen was missing the `My Money System` h1 every other screen opens with — added.
+- Results screen used a narrower, vertically-centered container (`max-w-xl`, flex-centered) while the other three screens use a wider, top-aligned one (`max-w-2xl`, block layout) — unified to match.
+
+One additional fix made during this pass, outside the original consistency list: the Baby Step ladder's rung labels (`BS1`, `BS2`, …) were replaced with short 1–2 word labels (Starter fund, Debt payoff, Full fund, Retirement, College, Payoff home, Build wealth) for readability.
+
+**UI Conventions in CLAUDE.md — deferred.** Holding off until the palette from the Claude Design export is finalized, so the recorded conventions don't need to be rewritten once colors land.

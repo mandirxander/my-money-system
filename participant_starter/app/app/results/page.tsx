@@ -61,9 +61,10 @@ export default function Results() {
   if (!checkin) return null
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-8">
-      <div className="w-full max-w-xl space-y-4">
+    <div className="min-h-screen bg-background p-8">
+      <div className="max-w-2xl mx-auto space-y-4">
 
+        <h1 className="text-foreground mb-1">My Money System</h1>
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">
           Check-in · {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           {checkin.mood && <span className="normal-case"> · came in feeling {checkin.mood}</span>}

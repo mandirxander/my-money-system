@@ -195,3 +195,27 @@
 **Tradeoffs:** New table and snapshot-write logic to maintain. First check-in ever run has no prior snapshot to compare against, so trend lines and gamified "win" states are skipped on that first run and only appear from the second check-in onward.
 
 ---
+
+## 2026-08-12 — Reversing sage-garden for a bold, high-contrast palette on the main check-in screen
+**Decision:** Moving away from the sage-garden shadcn theme applied in Session 7 toward a bolder, higher-contrast color palette (deep purple, magenta/pink, lime green, dark plum — direction set by a reference screenshot of another app's insights screens), applied to the main check-in screen. The original interaction design, copy, and component structure from the UX workflow stay as-is — this is a palette change, not a flow or content change. Actual hex values are deferred until a design system currently being built in Claude Design is ready to export from, rather than extracting an approximate palette from the reference screenshot now.
+**Why:** Reviewing the reference against the current sage-garden look, the bolder palette was the clear preference — the earlier theme choice (picked via tweakcn.com in Session 7, before any real design pass) no longer matches the direction. Waiting for the Claude Design export avoids doing the palette-matching work twice — once approximated from a screenshot, once for real.
+**Alternatives considered:** Extracting approximate hex values from the reference screenshot immediately, staying within sage-garden and treating the reference as structure-only inspiration (the workflow's default move, rejected here in favor of adopting the palette itself).
+**Tradeoffs:** The visual reference pass (Step 4 Part B of the user_experience workflow) is now blocked on an external dependency (the Claude Design system) rather than finishing in this session — structure/layout borrowed from the reference can proceed, but final color application waits.
+
+---
+
+## 2026-08-12 — AI-generated UI cue added, then reverted on the results screen
+**Decision:** Added a small "AI-generated" pill next to the three advice labels on the results screen (Budget status, Debt progress, What to focus on) to address the Step 3 overconfidence gap, then reverted it after seeing it live in favor of the plain report text.
+**Why:** Preferred how the results screen read without the visual cue — the badge felt like it undercut the plain, direct advice text rather than supporting it.
+**Alternatives considered:** A less visually intrusive treatment (e.g. folded into the review-screen confirmation instead of the results screen) — not built, left as a future option.
+**Tradeoffs:** The Step 3 overconfidence gap is now open again with no UI mitigation in place — accepted for now in favor of the cleaner read.
+
+---
+
+## 2026-08-12 — Baby Step ladder labels reworded from BS-codes to short plain-language labels
+**Decision:** Replaced the ladder's rung labels (`BS1`, `BS2`, … `BS7`) with short 1–2 word labels: Starter fund, Debt payoff, Full fund, Retirement, College, Payoff home, Build wealth.
+**Why:** Surfaced during the cross-screen consistency check — `BS`-codes assume the user already knows the Baby Steps framework's shorthand, which isn't a safe assumption for a glanceable progress visual.
+**Alternatives considered:** Keeping the `BS#` codes as-is (the framework's own shorthand) and relying on the "Step 1 — ..." Baby Step label already shown above the ladder for full context.
+**Tradeoffs:** None significant — this is a pure readability improvement with no functional change.
+
+---

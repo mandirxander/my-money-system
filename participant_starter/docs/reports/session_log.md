@@ -271,3 +271,32 @@
 **Next session focus:** Finish user experience workflow Step 4 Part B.
 
 ---
+
+## Session 10 — 2026-08-12
+
+**Goal for this session:** Reconcile uncommitted work from the last session, then resume the user_experience workflow at Step 4 Part B.
+
+**What we did:**
+- Reconciled a gap between the working tree and session_log.md: found and logged the missing Session 8 entry, plus a full Session 9 entry covering UX workflow Steps 2–3, Step 4 Part A, budget planned/actual tracking, checkin_snapshots, and the new visualization components — all of which had been sitting uncommitted for over a week
+- Deleted a stray empty file (`99.4KB`) from the repo root
+- Committed and pushed the reconciled work to `origin/main`
+- Reviewed a reference screenshot for the Step 4 Part B visual reference pass; decided to adopt its bold, high-contrast palette (not just its structure) on the main check-in screen, but deferred actual color values until the design system being built in Claude Design is ready to export
+- Added an "AI-generated" UI cue to the results screen addressing the Step 3 overconfidence gap, then reverted it after seeing it live — preferred the plain report text
+- Ran the cross-screen consistency check across onboarding/review/check-in/results: fixed the results screen's missing page header and mismatched container width (now matches the other three screens)
+- Reworded the Baby Step ladder's rung labels from `BS1`/`BS2`/etc. to short readable labels (Starter fund, Debt payoff, Full fund, Retirement, College, Payoff home, Build wealth)
+- Updated `workflow_progress.md` and `user_experience_design.md` to reflect current Step 4 Part B status
+
+**What we tried that didn't work:**
+- Attempted to derive a brand-new theme directly from a screenshot reference; held off, worried it would derail the existing design work without something more feasible in hand — used Claude Design to build a proper design system instead, to bring in once it's ready
+
+**What we learned:**
+- Need to plan further ahead and front-load exploration — new design inspiration keeps surfacing mid-build, and it's harder to fold in cleanly at this stage of the process than it would have been earlier
+
+**Blockers or open questions:**
+- Visual reference pass and UI Conventions in CLAUDE.md both blocked on the Claude Design palette export
+- Step 3's overconfidence gap has no UI mitigation after the revert — open for a future, less visually intrusive treatment
+- The last course session still needs to be pulled into the project
+
+**Next session focus:** Complete the last (pulled-in) session's homework.
+
+---
