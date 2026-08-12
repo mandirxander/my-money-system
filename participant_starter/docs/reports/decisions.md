@@ -219,3 +219,11 @@
 **Tradeoffs:** None significant — this is a pure readability improvement with no functional change.
 
 ---
+
+## 2026-08-12 — Forced tool_choice on the check-in LLM call, closing a live reliability gap
+**Decision:** Changed `checkin/route.ts`'s Claude call from `tool_choice: { type: 'auto' }` to `tool_choice: { type: 'tool', name: 'deliver_checkin' }`, forcing every check-in call to return structured output.
+**Why:** Discovered while pulling a real anchor example for the `evaluating_for_scale` homework — live-tested against real saved data, `"good"` mood check-ins failed with a generic 500 (`"Could not generate check-in. Try again."`) roughly 60% of the time. With `tool_choice: auto`, Claude was sometimes replying in plain text instead of calling the `deliver_checkin` tool, leaving the route with no structured output to read. `"stressed"` mood succeeded 3/3 in the same test; `"good"` failed 2/3. Forcing the tool eliminated the failure outright — 5/5 on a live re-run after the fix.
+**Alternatives considered:** Adding a retry on the no-tool-use case (rejected — guardrail #1 in this doc is explicitly "no silent auto-retry"); leaving `auto` and just improving the error message (doesn't fix the underlying reliability gap, only makes the failure friendlier).
+**Tradeoffs:** None identified — there was never a legitimate case where a plain-text reply instead of the structured tool call was the right outcome for this call, so forcing it has no downside found so far.
+
+---

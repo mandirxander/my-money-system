@@ -80,5 +80,6 @@ Runtime safety limits, applied in code this session:
 | New deterministic debt CSV validation | `lib/validateDebtCsv.ts` |
 | Debt route now branches on content-type: CSV upload (deterministic) vs. conversational (Claude) — both run through the same value guardrail before saving | `app/api/debt/route.ts` |
 | Check-in route now accepts either a CSV file or typed budget rows, both validated by the same `validateRows()` before the Claude call | `app/api/checkin/route.ts` |
+| Forced tool use (`tool_choice: { type: 'tool', name: 'deliver_checkin' }`, was `'auto'`) — with `auto`, Claude would sometimes reply in plain text instead of calling the tool, most often on "good" mood input, producing a generic 500 on ~60% of live-tested runs; forcing the tool closed it, verified 5/5 on a live re-run | `app/api/checkin/route.ts` |
 | Added upload/type toggles for both budget and debt sections | `app/page.tsx` |
 | Guidelines and guardrails documented for future edits | `CLAUDE.md` |

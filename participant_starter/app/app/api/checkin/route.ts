@@ -117,7 +117,7 @@ ${budgetSummary}`
       system: SYSTEM_PROMPT,
       messages: [{ role: 'user', content: userMessage }],
       tools: [CHECKIN_TOOL],
-      tool_choice: { type: 'auto' },
+      tool_choice: { type: 'tool', name: 'deliver_checkin' },
     })
 
     const toolUse = message.content.find(block => block.type === 'tool_use')
