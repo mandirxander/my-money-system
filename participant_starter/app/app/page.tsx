@@ -2,27 +2,42 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-
-const BABY_STEPS = [
-  { value: '1', label: 'Step 1 — $1,000 starter emergency fund' },
-  { value: '2', label: 'Step 2 — Pay off debt (debt snowball)' },
-  { value: '3', label: 'Step 3 — 3–6 months full emergency fund' },
-  { value: '4', label: 'Step 4 — Invest 15% for retirement' },
-  { value: '5', label: 'Step 5 — Save for college' },
-  { value: '6', label: 'Step 6 — Pay off home early' },
-  { value: '7', label: 'Step 7 — Build wealth and give' },
-]
+import { BABY_STEPS } from '@/lib/babySteps'
+import { BabyStepLadder } from '@/components/BabyStepLadder'
 
 interface BudgetFormRow {
   type: 'income' | 'bill'
   label: string
-  amount: string
+  plannedAmount: string
+  actualAmount: string
   dueDate: string
   paid: boolean
 }
 
+interface SavedBudgetRow {
+  type: 'income' | 'bill'
+  label: string
+  planned_amount: number
+  actual_amount: number | null
+  due_date: string
+  paid: boolean
+}
+
 function emptyBudgetRow(type: 'income' | 'bill' = 'bill'): BudgetFormRow {
-  return { type, label: '', amount: '', dueDate: '', paid: false }
+  return { type, label: '', plannedAmount: '', actualAmount: '', dueDate: '', paid: false }
+}
+
+function toBudgetRows(saved: SavedBudgetRow[]): BudgetFormRow[] {
+  return saved.length > 0
+    ? saved.map(r => ({
+        type: r.type,
+        label: r.label,
+        plannedAmount: String(r.planned_amount),
+        actualAmount: r.actual_amount === null ? '' : String(r.actual_amount),
+        dueDate: r.due_date ?? '',
+        paid: r.paid,
+      }))
+    : [emptyBudgetRow('income'), emptyBudgetRow('bill')]
 }
 
 interface LineItemRow {
@@ -134,6 +149,7 @@ export default function Home() {
   const [mood, setMood] = useState('good')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [stage, setStage] = useState<'form' | 'review'>('form')
   const router = useRouter()
 
   // Debt state
@@ -154,20 +170,26 @@ export default function Home() {
 
   // Budget state
   const [budgetMode, setBudgetMode] = useState<'form' | 'csv'>('form')
-  const [csv, setCsv] = useState<File | null>(null)
   const [budgetRows, setBudgetRows] = useState<BudgetFormRow[]>([emptyBudgetRow('income'), emptyBudgetRow('bill')])
+  const [savedBudget, setSavedBudget] = useState<SavedBudgetRow[]>([])
+  const [budgetSaving, setBudgetSaving] = useState(false)
+  const [budgetError, setBudgetError] = useState('')
+  const [budgetCsv, setBudgetCsv] = useState<File | null>(null)
+  const [budgetCsvConfirming, setBudgetCsvConfirming] = useState(false)
 
   // On mount, load profile and existing figures
   useEffect(() => {
     async function loadData() {
-      const [profileRes, debtRes, investmentsRes] = await Promise.all([
+      const [profileRes, debtRes, investmentsRes, budgetRes] = await Promise.all([
         fetch('/api/profile'),
         fetch('/api/debt'),
         fetch('/api/investments'),
+        fetch('/api/budget'),
       ])
       const profileData = await profileRes.json()
       const debtData = await debtRes.json()
       const investmentsData = await investmentsRes.json()
+      const budgetData = await budgetRes.json()
 
       if (profileData.profile) {
         setBabyStep(String(profileData.profile.baby_step))
@@ -184,6 +206,11 @@ export default function Home() {
       if (investmentsData.investments?.length > 0) {
         setSavedInvestments(investmentsData.investments)
         setInvestmentRows(toLineItemRows(investmentsData.investments))
+      }
+
+      if (budgetData.budget?.length > 0) {
+        setSavedBudget(budgetData.budget)
+        setBudgetRows(toBudgetRows(budgetData.budget))
       }
 
       setProfileLoaded(true)
@@ -318,28 +345,93 @@ export default function Home() {
     setBudgetRows(rows => rows.filter((_, i) => i !== index))
   }
 
-  const budgetFormReady =
-    budgetRows.length > 0 && budgetRows.every(r => r.label.trim() && r.amount.trim())
-  const budgetReady = budgetMode === 'csv' ? !!csv : budgetFormReady
+  function toBudgetItems() {
+    return budgetRows
+      .filter(r => r.label.trim() && r.plannedAmount.trim())
+      .map(r => ({
+        type: r.type,
+        label: r.label.trim(),
+        plannedAmount: Number(r.plannedAmount),
+        actualAmount: r.actualAmount.trim() ? Number(r.actualAmount) : null,
+        dueDate: r.dueDate,
+        paid: r.paid,
+      }))
+  }
 
-  async function handleSubmit(e: React.SyntheticEvent<HTMLFormElement>) {
+  async function handleBudgetSubmit() {
+    setBudgetSaving(true)
+    setBudgetError('')
+
+    const res = await fetch('/api/budget', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items: toBudgetItems() }),
+    })
+    const data = await res.json()
+    setBudgetSaving(false)
+
+    if (data.error) {
+      setBudgetError(data.error)
+      return
+    }
+
+    setSavedBudget(data.budget)
+    setBudgetRows(toBudgetRows(data.budget))
+  }
+
+  async function submitBudgetCsv(confirmReplace: boolean) {
+    if (!budgetCsv) return
+    setBudgetSaving(true)
+    setBudgetError('')
+
+    const formData = new FormData()
+    formData.append('csv', budgetCsv)
+    if (confirmReplace) formData.append('confirmReplace', 'true')
+
+    const res = await fetch('/api/budget', { method: 'POST', body: formData })
+    const data = await res.json()
+    setBudgetSaving(false)
+
+    if (res.status === 409) {
+      setBudgetCsvConfirming(true)
+      return
+    }
+
+    if (data.error) {
+      setBudgetError(data.error)
+      return
+    }
+
+    setSavedBudget(data.budget)
+    setBudgetRows(toBudgetRows(data.budget))
+    setBudgetCsv(null)
+    setBudgetCsvConfirming(false)
+  }
+
+  const budgetReady = savedBudget.length > 0
+
+  function handleContinueToReview(e: React.SyntheticEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!budgetReady) return
+    if (!budgetReady || savedDebts.length === 0) return
+    setError('')
+    setStage('review')
+  }
 
+  function openChangeStep() {
+    setStage('form')
+    setOnboarding(true)
+  }
+
+  async function runCheckin() {
     setLoading(true)
     setError('')
 
-    const formData = new FormData()
-    if (budgetMode === 'csv' && csv) {
-      formData.append('csv', csv)
-    } else {
-      formData.append('budgetRows', JSON.stringify(budgetRows))
-    }
-    formData.append('mood', mood)
-    formData.append('babyStep', babyStep)
-
     try {
-      const res = await fetch('/api/checkin', { method: 'POST', body: formData })
+      const res = await fetch('/api/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mood, babyStep }),
+      })
       const data = await res.json()
 
       if (data.error) {
@@ -349,11 +441,17 @@ export default function Home() {
           budgetStatus: data.budgetStatus,
           debtProgress: data.debtProgress,
           recommendedFocus: data.recommendedFocus,
+          babyStep: data.babyStep,
+          debtBreakdown: data.debtBreakdown,
+          investmentBreakdown: data.investmentBreakdown,
+          budgetTotals: data.budgetTotals,
+          previousSnapshot: data.previousSnapshot,
+          mood,
         }))
         router.push('/results')
       }
     } catch {
-      setError('Request failed — check the browser console.')
+      setError('Request failed — check your connection and retry.')
     } finally {
       setLoading(false)
     }
@@ -373,11 +471,11 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-background p-8">
         <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-semibold text-foreground mb-1">My Money System</h1>
+          <h1 className="text-foreground mb-1">My Money System</h1>
           <p className="text-muted-foreground text-sm mb-10">Let's get you set up.</p>
 
           <div className="bg-card border border-border rounded-xl p-6">
-            <h2 className="text-base font-semibold text-foreground mb-1">Which Baby Step are you on?</h2>
+            <h2 className="mb-1">Which Baby Step are you on?</h2>
             <p className="text-sm text-muted-foreground mb-6">
               This sets the focus for every check-in. You can update it later when you advance.
             </p>
@@ -422,27 +520,125 @@ export default function Home() {
     )
   }
 
+  // Review screen — the "here's what we're about to consider" confirmation
+  // moment before Claude is called, and where the Baby Step gets re-verified
+  // instead of being trusted indefinitely from onboarding.
+  if (stage === 'review') {
+    const currentStep = BABY_STEPS.find(s => s.value === babyStep)
+    const totalDebt = savedDebts.reduce((sum, d) => sum + d.amount, 0)
+    const totalInvestments = savedInvestments.reduce((sum, i) => sum + i.amount, 0)
+    const plannedIncome = savedBudget.filter(r => r.type === 'income').reduce((sum, r) => sum + r.planned_amount, 0)
+    const plannedBills = savedBudget.filter(r => r.type === 'bill').reduce((sum, r) => sum + r.planned_amount, 0)
+    const actualsEntered = savedBudget.filter(r => r.actual_amount !== null).length
+
+    return (
+      <div className="min-h-screen bg-background p-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-foreground mb-1">My Money System</h1>
+          <p className="text-muted-foreground text-sm mb-10">Here&apos;s what we&apos;re about to consider.</p>
+
+          <div className="bg-card border border-border rounded-xl p-6 mb-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">Baby Step</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-foreground">Still on <strong>{currentStep?.label}</strong>?</p>
+              <button
+                type="button"
+                onClick={openChangeStep}
+                className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors shrink-0"
+              >
+                Change
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-card border border-border rounded-xl p-6 mb-4 space-y-3">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Figures</p>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground">Total debt</span>
+              <span className="text-muted-foreground">${totalDebt.toLocaleString()} ({savedDebts.length} {savedDebts.length === 1 ? 'debt' : 'debts'})</span>
+            </div>
+            {savedInvestments.length > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-foreground">Investments &amp; assets</span>
+                <span className="text-muted-foreground">${totalInvestments.toLocaleString()} ({savedInvestments.length})</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground">Planned income</span>
+              <span className="text-muted-foreground">${plannedIncome.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground">Planned bills</span>
+              <span className="text-muted-foreground">${plannedBills.toLocaleString()}{actualsEntered > 0 ? ` (${actualsEntered} with actuals entered)` : ''}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-foreground">Mood coming in</span>
+              <span className="text-muted-foreground capitalize">{mood}</span>
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-5 mb-4">
+              <p className="text-sm font-semibold text-destructive mb-1">Check-in failed</p>
+              <p className="text-sm text-destructive/80 mb-3">{error}</p>
+              <button
+                type="button"
+                onClick={runCheckin}
+                disabled={loading}
+                className="bg-destructive text-destructive-foreground text-sm font-medium py-1.5 px-3 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+              >
+                {loading ? 'Retrying…' : 'Retry'}
+              </button>
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setStage('form')}
+              disabled={loading}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+            >
+              ← Back to edit
+            </button>
+            <button
+              type="button"
+              onClick={runCheckin}
+              disabled={loading}
+              className="flex-1 bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+            >
+              {loading ? 'Running check-in…' : 'Confirm and run check-in'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   // Check-in screen
   const currentStep = BABY_STEPS.find(s => s.value === babyStep)
 
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-semibold text-foreground mb-1">My Money System</h1>
-        <div className="flex items-center justify-between mb-10">
+        <h1 className="text-foreground mb-1">My Money System</h1>
+        <div className="flex items-center justify-between mb-2">
           <p className="text-muted-foreground text-sm">{currentStep?.label}</p>
           <button
-            onClick={() => setOnboarding(true)}
+            onClick={openChangeStep}
             className="text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground transition-colors"
           >
             Change step
           </button>
         </div>
+        <div className="mb-10">
+          <BabyStepLadder currentStep={babyStep} />
+        </div>
 
         {/* Debt figures */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-sm font-medium text-foreground">Current debt figures</h2>
+            <h2>Current debt figures</h2>
             <ModeToggle
               value={debtMode}
               onChange={v => setDebtMode(v as 'form' | 'csv')}
@@ -506,7 +702,7 @@ export default function Home() {
         {/* Investments / assets */}
         <div className="mb-10">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-sm font-medium text-foreground">Investments &amp; assets <span className="text-muted-foreground font-normal">(optional)</span></h2>
+            <h2>Investments &amp; assets <span className="text-muted-foreground font-normal">(optional)</span></h2>
             <ModeToggle
               value={investmentMode}
               onChange={v => setInvestmentMode(v as 'form' | 'csv')}
@@ -567,92 +763,153 @@ export default function Home() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Budget */}
+        <div className="mb-10">
+          <div className="flex items-center justify-between mb-1">
+            <h2>Budget <span className="text-muted-foreground font-normal">(this pay period)</span></h2>
+            <ModeToggle
+              value={budgetMode}
+              onChange={v => setBudgetMode(v as 'form' | 'csv')}
+              options={[
+                { value: 'form', label: 'Type it in' },
+                { value: 'csv', label: 'Upload CSV' },
+              ]}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mb-3">
+            {budgetMode === 'form'
+              ? 'Planned amount is set once per period. Fill in Actual as you go to track real spend against the plan.'
+              : 'Upload a CSV with Income, Bills, Due Date, Amount, and Paid columns. Sets planned amounts for a new period.'}
+          </p>
 
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <label className="block text-sm font-medium text-foreground">
-                Budget
-              </label>
-              <ModeToggle
-                value={budgetMode}
-                onChange={v => setBudgetMode(v as 'form' | 'csv')}
-                options={[
-                  { value: 'form', label: 'Type it in' },
-                  { value: 'csv', label: 'Upload CSV' },
-                ]}
-              />
-            </div>
+          {budgetError && <p className="text-sm text-destructive mb-2">{budgetError}</p>}
 
-            {budgetMode === 'form' ? (
-              <div className="space-y-2">
-                {budgetRows.map((row, i) => (
-                  <div key={i} className="flex items-center gap-2 bg-muted rounded-lg p-2">
-                    <select
-                      value={row.type}
-                      onChange={e => updateBudgetRow(i, { type: e.target.value as 'income' | 'bill' })}
-                      className="border border-border rounded-md px-2 py-1.5 text-xs text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
-                    >
-                      <option value="income">Income</option>
-                      <option value="bill">Bill</option>
-                    </select>
+          {budgetMode === 'form' ? (
+            <div className="space-y-2">
+              {budgetRows.map((row, i) => (
+                <div key={i} className="flex items-center gap-2 bg-muted rounded-lg p-2">
+                  <select
+                    value={row.type}
+                    onChange={e => updateBudgetRow(i, { type: e.target.value as 'income' | 'bill' })}
+                    className="border border-border rounded-md px-2 py-1.5 text-xs text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                  >
+                    <option value="income">Income</option>
+                    <option value="bill">Bill</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="Label"
+                    value={row.label}
+                    onChange={e => updateBudgetRow(i, { label: e.target.value })}
+                    className="flex-1 min-w-0 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Planned"
+                    value={row.plannedAmount}
+                    onChange={e => updateBudgetRow(i, { plannedAmount: e.target.value })}
+                    className="w-24 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Actual"
+                    value={row.actualAmount}
+                    onChange={e => updateBudgetRow(i, { actualAmount: e.target.value })}
+                    className="w-24 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Due date"
+                    value={row.dueDate}
+                    onChange={e => updateBudgetRow(i, { dueDate: e.target.value })}
+                    className="w-28 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                  <label className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
                     <input
-                      type="text"
-                      placeholder="Label"
-                      value={row.label}
-                      onChange={e => updateBudgetRow(i, { label: e.target.value })}
-                      className="flex-1 min-w-0 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
+                      type="checkbox"
+                      checked={row.paid}
+                      onChange={e => updateBudgetRow(i, { paid: e.target.checked })}
+                      className="accent-primary"
                     />
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      value={row.amount}
-                      onChange={e => updateBudgetRow(i, { amount: e.target.value })}
-                      className="w-24 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Due date"
-                      value={row.dueDate}
-                      onChange={e => updateBudgetRow(i, { dueDate: e.target.value })}
-                      className="w-28 border border-border rounded-md px-2 py-1.5 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <label className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
-                      <input
-                        type="checkbox"
-                        checked={row.paid}
-                        onChange={e => updateBudgetRow(i, { paid: e.target.checked })}
-                        className="accent-primary"
-                      />
-                      Paid
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => removeBudgetRow(i)}
-                      className="text-muted-foreground hover:text-destructive transition-colors text-sm px-1"
-                      aria-label="Remove row"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                    Paid
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => removeBudgetRow(i)}
+                    className="text-muted-foreground hover:text-destructive transition-colors text-sm px-1"
+                    aria-label="Remove row"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addBudgetRow}
+                className="text-sm font-medium text-primary hover:opacity-80 transition-opacity"
+              >
+                + Add row
+              </button>
+              <div>
                 <button
                   type="button"
-                  onClick={addBudgetRow}
-                  className="text-sm font-medium text-primary hover:opacity-80 transition-opacity"
+                  onClick={handleBudgetSubmit}
+                  disabled={budgetSaving}
+                  className="mt-2 bg-secondary text-secondary-foreground text-sm font-medium py-2 px-4 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
                 >
-                  + Add row
+                  {budgetSaving ? 'Saving…' : savedBudget.length > 0 ? 'Update budget' : 'Save budget'}
                 </button>
               </div>
-            ) : (
+            </div>
+          ) : (
+            <>
               <input
                 type="file"
                 accept=".csv"
-                onChange={e => setCsv(e.target.files?.[0] || null)}
-                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:opacity-90 cursor-pointer"
+                onChange={e => {
+                  setBudgetCsv(e.target.files?.[0] || null)
+                  setBudgetCsvConfirming(false)
+                }}
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-secondary-foreground hover:file:opacity-90 cursor-pointer mb-2"
               />
-            )}
-          </div>
+              {budgetCsvConfirming ? (
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 space-y-2">
+                  <p className="text-sm text-destructive">
+                    This replaces your current budget period, including any actual amounts you&apos;ve entered. Continue?
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => submitBudgetCsv(true)}
+                      disabled={budgetSaving}
+                      className="bg-destructive text-destructive-foreground text-sm font-medium py-1.5 px-3 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+                    >
+                      {budgetSaving ? 'Replacing…' : 'Replace budget'}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBudgetCsvConfirming(false)}
+                      className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => submitBudgetCsv(false)}
+                  disabled={!budgetCsv || budgetSaving}
+                  className="bg-secondary text-secondary-foreground text-sm font-medium py-2 px-4 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
+                >
+                  {budgetSaving ? 'Uploading…' : 'Upload budget'}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+
+        <form onSubmit={handleContinueToReview} className="space-y-6">
 
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">
@@ -687,32 +944,21 @@ export default function Home() {
                 {budgetReady ? '✓' : '○'}
               </span>
               <span className={budgetReady ? 'text-foreground' : 'text-muted-foreground'}>
-                {budgetMode === 'csv'
-                  ? csv
-                    ? `Budget CSV — ${csv.name}`
-                    : 'Budget CSV — upload your exported Excel file'
-                  : budgetReady
-                    ? `Budget — ${budgetRows.length} ${budgetRows.length === 1 ? 'row' : 'rows'} entered`
-                    : 'Budget — fill in a label and amount for each row above'}
+                {budgetReady
+                  ? `Budget saved (${savedBudget.length} ${savedBudget.length === 1 ? 'row' : 'rows'})`
+                  : 'Budget — enter and save your planned income and bills above'}
               </span>
             </div>
           </div>
 
           <button
             type="submit"
-            disabled={!budgetReady || savedDebts.length === 0 || loading}
+            disabled={!budgetReady || savedDebts.length === 0}
             className="w-full bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 rounded-lg disabled:opacity-40 hover:opacity-90 transition-opacity"
           >
-            {loading ? 'Running check-in…' : 'Run check-in'}
+            Review and run check-in
           </button>
         </form>
-
-        {error && (
-          <div className="mt-10 bg-destructive/10 border border-destructive/20 rounded-lg p-5">
-            <p className="text-sm font-semibold text-destructive mb-1">Problem with your budget</p>
-            <p className="text-sm text-destructive/80">{error}</p>
-          </div>
-        )}
       </div>
     </div>
   )

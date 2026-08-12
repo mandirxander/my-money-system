@@ -68,10 +68,11 @@ Any data input — CSV upload or conversational debt entry — may not be valida
 
 ## Data Flow & Connection Decisions
 
-- **Budget data:** CSV upload *or* typed mini-form → both run through the same rule-based server-side validation (`validateRows` in `lib/validateCsv.ts`) → gate on failure
+- **Budget data:** CSV upload *or* typed mini-form → both run through the same rule-based server-side validation (`validateRows` in `lib/validateCsv.ts`) → saved to `budget_figures`, editable in place like debt/investments. Each row tracks a planned amount (set once per period) and a separate actual amount (filled in later) — CSV upload sets planned only and requires user confirmation before it overwrites an existing period's data.
 - **Debt data:** Conversational text input (Claude parses to structured JSON) *or* CSV upload (deterministic, `lib/validateDebtCsv.ts`) → both run through the same value sanity guardrail (`lib/validateDebt.ts`) → saved to Supabase
 - **Claude API:** Generates check-in advice scoped to Baby Step; called only after clean data is confirmed. Also parses conversational debt input — the one path still LLM-based, guarded by the value sanity check below.
 - **Supabase:** Server-side client, `SUPABASE_SERVICE_ROLE_KEY` only — stores Baby Step + debt figures
+- **History:** `checkin_snapshots` table (Baby Step, total debt, total investments, budget totals, timestamp) — one append-only row written per completed check-in, used for trend charts and gamified "win" states. Separate from the current-figures tables, which stay editable in place.
 - **SendGrid:** Deferred to V2
 
 ## Guidelines (Session 5)
@@ -92,7 +93,6 @@ Any data input — CSV upload or conversational debt entry — may not be valida
 ## Cut or Simplified for V1
 
 - No in-app reminders (email, calendar, text) — V2
-- No budget or debt history over time — V1 uses current figures only
 - No multi-user support or user accounts — testing with own data first
 - No output delivery preference (piece by piece is the only mode) — V2
 - No receipt photo upload — V2

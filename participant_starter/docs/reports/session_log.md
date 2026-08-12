@@ -209,3 +209,65 @@
 **Next session focus:** UI graphs and data visualizations, conversational input so users can talk to the system, and Session 5 homework.
 
 ---
+
+## Session 8 — 2026-07-28
+
+**Goal for this session:** Finish Session 5 homework Part 1 (agent behavior workflow) and begin Part 2 (user experience workflow).
+
+**What we did:**
+- Completed the agent behavior workflow: grounded in the real POC, ran all 8 CSV eval cases against the live `validateCsv()` (found and fixed a missing-column gap), wrote guidelines/guardrails into `CLAUDE.md` and `docs/agent_behavior_design.md`
+- Added dual-input support (type it in or upload CSV) for budget, debt, and investments — all validated by shared deterministic rules, no LLM in any validation path
+- Removed conversational (Claude-parsed) debt input entirely in favor of structured label/amount rows, matching budget's pattern
+- Added a new Investments & assets section (optional), including a new `investment_figures` Supabase table
+- Added value-sanity guardrails on debt and investment figures to catch implausible values before they're saved
+- Made saved debt/investment figures editable in place — the typed form now pre-fills with current saved values instead of starting blank
+- Reordered the check-in screen (debt → investments → budget → mood → readiness → submit) and unified all toggles to "Type it in" first, "Upload CSV" second
+- Verified the full flow end-to-end in a real browser (Playwright), including a live edit-in-place scenario
+- Committed and pushed all changes to `origin/main`
+- Started the user experience workflow — completed Step 1 (the four lenses: what the user provides/sees/controls/approves), currently paused before confirming and moving to Step 2
+
+**What we tried that didn't work:**
+- Forgot to restart the dev server with the `/restart-dev-server` command after a session gap — hit a stale-server error, which was a good real-world reminder of why that command exists
+- Creating the new Supabase table required some new steps (schema cache reload) that took a bit to work through, but got there
+
+**What we learned:**
+- There's a lot still ahead for this second iteration — the MVP build felt straightforward, but this refinement pass feels more like being back in the ideate stage: adding features and really thinking through user experience requires a different mode of thinking than the first build
+- The challenge now is balancing genuine UX/UI polish against perfectionism at this stage — aiming for "still amazing" without over-investing before it's warranted
+
+**Blockers or open questions:**
+- User experience workflow Step 1 delivered but not yet confirmed — need to confirm it matches expectations before moving to Step 2 (ownership rules)
+- Steps 2–4 of the user experience workflow (ownership, AI-risk checks, interaction flow + design pass) still ahead
+- Part 3 (workflow toolbelt cards) and Part 4 (CLAUDE.md update + cleanup pass) of Session 5 homework not yet started
+
+**Next session focus:** Finish the user_experience workflow — Step 2 ownership rules.
+
+---
+
+## Session 9 — 2026-08-03
+
+**Goal for this session:** Continue the user experience workflow past Step 1 and build out budget history / progress visualization.
+
+**What we did:**
+- Completed user experience workflow Steps 2–3 (ownership rules, AI-risk checks) and started Step 4: Part A (interaction flow) confirmed and saved; Part B in progress — typography ramp applied, section-label sizing decided
+- Closed the six Step 1 UX gaps: added a review screen between "Run check-in" and the Claude call (Baby Step re-verification, figures summary, confirm action), inline Retry on failed check-ins, back-navigation on the results page paired with Continue, mood echo in the results header, and an explicit "this pay period" scope label on budget
+- Reversed the "budget entered fresh every check-in" model — budget figures now persist in a new `budget_figures` table with separate planned vs. actual amounts per row; CSV upload sets planned only and requires confirmation before overwriting a period
+- Reopened the "no history" V1 cut — added an append-only `checkin_snapshots` table (Baby Step, total debt, total investments, budget totals, timestamp) written once per completed check-in, to support trend charts and gamified "win" states
+- Built `BabyStepLadder.tsx` and `SnapshotCharts.tsx` components, `lib/babySteps.ts` reference data, `lib/validateBudget.ts`, and the new `api/budget/route.ts`
+- Created `docs/user_experience_design.md`
+- Logged the Session 8 entry itself, which had been drafted but never appended
+- (Reconciliation, 2026-08-12) Found and appended this entry after discovering it was never logged; deleted a stray empty file (`99.4KB`) from the repo root
+
+**What we tried that didn't work:**
+- Designed and built this iteration mostly from personal need, without first researching other budgeting apps' pros and cons — in hindsight, that research should have come first
+
+**What we learned:**
+- User flow has to be designed as an actual journey with gaps deliberately identified — otherwise you end up building individual features with no coherent path connecting them
+
+**Blockers or open questions:**
+- UX workflow Step 4 Part B still open: visual reference pass, AI-risk UI cue (overconfidence gap), consistency check, UI Conventions section in CLAUDE.md
+- No competitive research done on other budgeting apps — should inform future UX decisions
+- This session's work sat uncommitted in git for over a week before being logged — consider committing more frequently to avoid another reconciliation gap
+
+**Next session focus:** Finish user experience workflow Step 4 Part B.
+
+---

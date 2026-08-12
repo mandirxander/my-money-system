@@ -131,3 +131,67 @@
 **Tradeoffs:** Rule-based validation is less flexible for edge cases the rules don't anticipate, but determinism is non-negotiable for financial data.
 
 ---
+
+## 2026-07-28 — Dual-input support for budget, debt, and investments
+**Decision:** Budget, debt, and investment figures can each be entered via typed structured rows or CSV upload — every path validated by the same deterministic, rule-based checks with no LLM involved in validation.
+**Why:** Session 5's quality-risk measurement showed the deterministic CSV path had fully closed the non-determinism risk; extending that same guarantee to every input path (rather than letting a new path reopen it) keeps the whole system at one quality bar.
+**Alternatives considered:** LLM-based parsing for typed budget entry or debt CSV upload (mirroring the original conversational debt pattern).
+**Tradeoffs:** More validation code to maintain across input types, in exchange for full determinism everywhere data enters the system.
+
+---
+
+## 2026-07-28 — Conversational debt input replaced with structured rows
+**Decision:** Removed the Claude-based conversational debt parsing entirely; typed debt entry now uses the same label/amount row editor as budget, not free text.
+**Why:** Requested for UI/UX consistency across sections, and it happens to close the last remaining non-deterministic input path in the system.
+**Alternatives considered:** Keeping conversational parsing as a secondary option alongside structured rows.
+**Tradeoffs:** Reverses the Session 4 decision "Conversational debt input only in V1" — debt entry is now less free-form/conversational than originally designed, in exchange for full determinism and pattern consistency with budget.
+
+---
+
+## 2026-07-28 — Investments & assets as a new optional data category
+**Decision:** Added an Investments & assets section (optional, not required to run a check-in), backed by a new `investment_figures` Supabase table, supporting the same type-it-in/CSV pattern as debt.
+**Why:** Baby Steps 4–7 involve investing and building wealth; the system had no way to track this data at all.
+**Alternatives considered:** Folding investment tracking into the existing debt table with a type flag.
+**Tradeoffs:** A second nearly-identical table/route to maintain, in exchange for a clean separation between debt and asset data.
+
+---
+
+## 2026-07-28 — Value-sanity guardrails on debt and investment figures
+**Decision:** Debt amounts must be >0 and ≤$2,000,000; investment amounts must be >0 and ≤$10,000,000 — enforced before saving, regardless of entry path.
+**Why:** Closes the "confidently wrong" risk identified in Step 1 of the agent behavior workflow — a garbled or mistyped figure could otherwise be saved and treated as fact in every future check-in.
+**Alternatives considered:** No upper bound (relying only on a >0 check); a shared single ceiling for both debt and investments.
+**Tradeoffs:** The ceilings are backstops, not real caps — a legitimately large debt or asset outside the range would need a manual override, though this hasn't come up yet.
+
+---
+
+## 2026-07-28 — Saved debt/investment figures editable in place
+**Decision:** The typed entry form for debt and investments now pre-fills with the currently saved values (rather than starting blank), so a single value can be edited and re-saved without retyping everything.
+**Why:** Requested to support real use cases like paying down a debt or updating an asset value — retyping the full list every time was unnecessary friction.
+**Alternatives considered:** Keeping the form blank on load and relying on the read-only saved list as the only view of current data.
+**Tradeoffs:** None significant — this replaced a redundant duplicate display (the read-only list) with the editable rows serving double duty as both display and edit surface.
+
+---
+
+## 2026-08-03 — Closed the six Step 1 UX gaps: review screen, back nav, retry, scope label
+**Decision:** Added a review stage between "Run check-in" and the Claude call — shows a Baby Step re-verification prompt ("Still on Baby Step X?" with a Change link), a figures summary (debt/investment totals, planned budget totals, mood), and a "Confirm and run check-in" action, replacing the old direct-submit flow. A failed check-in now shows an inline Retry button on that same screen rather than just a banner. The results page gained back-navigation (paired with the existing Continue) at each reveal step, plus a mood echo in the header. The budget section now explicitly labels its scope ("this pay period") next to the heading.
+**Why:** Session 8's UX audit (Step 1, four lenses) flagged these as confirmed gaps: no confirmation moment before advice generation, no way to undo "Continue," no retry path, Baby Step trusted indefinitely, and budget's implicit period scope. Baby Step re-verification and the "what we're about to consider" moment turned out to be one screen, not two.
+**Alternatives considered:** A modal instead of a full review screen; re-verifying Baby Step on a time/count-based cadence instead of every check-in.
+**Tradeoffs:** One more click between "ready" and "advice delivered" — accepted since the previous flow had no confirmation step at all. Baby Step re-verification asks every single check-in rather than tracking elapsed time or count, which is simpler but may feel repetitive if it never changes; revisit if that friction shows up in practice.
+
+---
+
+## 2026-08-03 — Budget figures now persisted, with planned vs. actual tracking
+**Decision:** Reverses the earlier decision that budget is "entered fresh every check-in, no history in V1." Budget moves to a new `budget_figures` table (type, label, planned_amount, actual_amount, due_date, paid), persisted and editable in place — same pattern as debt/investments. Each row keeps a planned amount (set at period start) and a separate actual amount (filled in later, once known), rather than overwriting one with the other. CSV upload still enters planned amounts only (bulk initial entry); actual spend is filled in via the typed editor in later sessions. Uploading a new CSV to start a new period requires an explicit user confirmation first, since it wipes any actual amounts entered for the old period — no silent overwrite. Merging/preserving old-period actuals against a new CSV is parked for V2.
+**Why:** The check-in is supposed to help track real progress against a plan; a budget that resets to blank every session couldn't ever show whether the user stayed on plan. Keeping planned and actual separate (rather than overwriting) preserves the original plan as a reference point for spend-vs-plan advice.
+**Alternatives considered:** Single-amount edit-in-place model (matching debt/investments exactly, overwriting planned with actual); allowing CSV upload to silently overwrite without confirmation, matching debt/investments' existing pattern.
+**Tradeoffs:** More fields to validate and display per row; the check-in route now reads saved budget figures instead of receiving them fresh per submission, which also changes the readiness gate (saved budget on file, not "filled in this session").
+
+---
+
+## 2026-08-03 — Reopened the "no history" V1 cut for data visualization
+**Decision:** Reverses the earlier V1 cut ("No budget or debt history over time — V1 uses current figures only"). Added an append-only `checkin_snapshots` table (Baby Step, total debt, total investments, budget totals, timestamp), written once per completed check-in. Debt/investment *current* figures stay editable in place as before — snapshots are a separate historical layer, not a change to that model.
+**Why:** Scoping data visualization (Baby Step ladder, debt/budget/investment breakdowns, gamified "win" moments for debt paydown and budget met) surfaced that trend charts and gamification both require comparing against a prior state, which the current-figures-only model can't support.
+**Alternatives considered:** Keeping visualization to snapshot-only (no trends, no gamification) and parking trend/gamification for V2.
+**Tradeoffs:** New table and snapshot-write logic to maintain. First check-in ever run has no prior snapshot to compare against, so trend lines and gamified "win" states are skipped on that first run and only appear from the second check-in onward.
+
+---

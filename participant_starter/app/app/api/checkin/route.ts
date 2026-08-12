@@ -1,21 +1,14 @@
 import { NextRequest } from 'next/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { validateCsv, validateRows } from '@/lib/validateCsv'
 import { supabase } from '@/lib/supabase'
-
-interface BudgetFormRow {
-  type: 'income' | 'bill'
-  label: string
-  amount: string
-  dueDate: string
-  paid: boolean
-}
 
 const client = new Anthropic()
 
 const SYSTEM_PROMPT = `You are a personal financial check-in coach for a family using Dave Ramsey's Baby Steps framework.
 
-The budget CSV and debt figures you receive have already been validated — they are clean. Do not re-validate them.
+The budget and debt figures you receive have already been validated — they are clean. Do not re-validate them.
+
+The budget lists a planned amount per row and, once known, an actual amount — speak to plan-vs-actual when actuals are present, not just the plan.
 
 Be direct and warm. Acknowledge emotional weight first if the mood signals stress or crisis. Connect to Baby Steps naturally, not as a lecture. Keep each field to 2–3 sentences max.`
 
@@ -44,54 +37,7 @@ const CHECKIN_TOOL: Anthropic.Tool = {
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData()
-    const csvFile = formData.get('csv') as File | null
-    const budgetRowsRaw = formData.get('budgetRows') as string | null
-    const mood = formData.get('mood') as string
-    const babyStep = formData.get('babyStep') as string
-
-    // Both entry modes are rule-based and deterministic — the LLM is only
-    // called after data is confirmed clean, regardless of how it arrived.
-    let csvText: string
-
-    if (csvFile) {
-      csvText = await csvFile.text()
-
-      if (!csvText.trim()) {
-        return Response.json({ error: 'The CSV file is empty.' }, { status: 400 })
-      }
-
-      const validation = validateCsv(csvText)
-      if (!validation.valid) {
-        return Response.json({ error: validation.error }, { status: 422 })
-      }
-    } else if (budgetRowsRaw) {
-      const rows: BudgetFormRow[] = JSON.parse(budgetRowsRaw)
-
-      if (rows.length === 0) {
-        return Response.json({ error: 'No budget rows provided.' }, { status: 400 })
-      }
-
-      const headers = ['Income', 'Bills', 'Due Date', 'Amount', 'Paid']
-      const dataRows = rows.map(r => [
-        r.type === 'income' ? r.label : '',
-        r.type === 'bill' ? r.label : '',
-        r.dueDate,
-        r.amount,
-        r.paid ? 'Yes' : 'No',
-      ])
-
-      const validation = validateRows(headers, dataRows)
-      if (!validation.valid) {
-        return Response.json({ error: validation.error }, { status: 422 })
-      }
-
-      // Re-serialize to the same CSV shape so everything downstream (Claude
-      // prompt, preview) is identical regardless of which input path was used.
-      csvText = [headers.join(','), ...dataRows.map(r => r.join(','))].join('\n')
-    } else {
-      return Response.json({ error: 'No budget data provided.' }, { status: 400 })
-    }
+    const { mood, babyStep } = await request.json()
 
     // Load saved debt figures — gate if missing
     const { data: debtRows } = await supabase
@@ -119,7 +65,42 @@ export async function POST(request: NextRequest) {
         ? investmentRows.map(inv => `${inv.label}: $${inv.amount.toLocaleString()}`).join('\n')
         : null
 
-    const csvPreview = csvText.split('\n').slice(0, 5).join('\n')
+    // Budget is saved and edited in place — this is the one figure the check-in
+    // reads directly rather than receiving fresh, since it now tracks a planned
+    // amount alongside an actual amount filled in across sessions.
+    const { data: budgetRows } = await supabase
+      .from('budget_figures')
+      .select('type, label, planned_amount, actual_amount, due_date, paid')
+      .order('updated_at', { ascending: true })
+
+    if (!budgetRows || budgetRows.length === 0) {
+      return Response.json(
+        { error: 'No budget found. Enter your planned income and bills before running a check-in.' },
+        { status: 422 }
+      )
+    }
+
+    const budgetSummary = budgetRows
+      .map(r => {
+        const actual = r.actual_amount !== null ? `, actual $${r.actual_amount.toLocaleString()}` : ''
+        const due = r.due_date ? `, due ${r.due_date}` : ''
+        return `${r.label} (${r.type}): planned $${r.planned_amount.toLocaleString()}${actual}${due}${r.paid ? ', paid' : ''}`
+      })
+      .join('\n')
+
+    // Snapshot totals — used for the results-page breakdown charts and, once a
+    // prior snapshot exists, trend/gamification comparisons.
+    const totalDebt = debtRows.reduce((sum, d) => sum + d.amount, 0)
+    const totalInvestments = (investmentRows ?? []).reduce((sum, inv) => sum + inv.amount, 0)
+    const budgetIncome = budgetRows.filter(r => r.type === 'income').reduce((sum, r) => sum + r.planned_amount, 0)
+    const budgetBills = budgetRows.filter(r => r.type === 'bill').reduce((sum, r) => sum + r.planned_amount, 0)
+
+    const { data: previousSnapshot } = await supabase
+      .from('checkin_snapshots')
+      .select('baby_step, total_debt, total_investments, budget_income, budget_bills, created_at')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
 
     const userMessage = `Mood coming into this check-in: ${mood}
 Current Baby Step: ${babyStep}
@@ -127,8 +108,8 @@ Current Baby Step: ${babyStep}
 Current debt figures:
 ${debtSummary}
 ${investmentSummary ? `\nCurrent investments/assets:\n${investmentSummary}\n` : ''}
-Budget CSV:
-${csvText}`
+Budget (planned vs. actual):
+${budgetSummary}`
 
     const message = await client.messages.create({
       model: 'claude-sonnet-4-6',
@@ -150,11 +131,25 @@ ${csvText}`
       recommended_focus: string
     }
 
+    const { error: snapshotError } = await supabase.from('checkin_snapshots').insert({
+      baby_step: Number(babyStep),
+      total_debt: totalDebt,
+      total_investments: totalInvestments,
+      budget_income: budgetIncome,
+      budget_bills: budgetBills,
+    })
+    if (snapshotError) console.error('Snapshot save error:', snapshotError)
+
     return Response.json({
       budgetStatus: result.budget_status,
       debtProgress: result.debt_progress,
       recommendedFocus: result.recommended_focus,
-      csvPreview,
+      debtBreakdown: debtRows,
+      investmentBreakdown: investmentRows ?? [],
+      budgetBreakdown: budgetRows,
+      budgetTotals: { income: budgetIncome, bills: budgetBills },
+      babyStep: Number(babyStep),
+      previousSnapshot: previousSnapshot ?? null,
     })
   } catch (error) {
     console.error('Check-in error:', error)
